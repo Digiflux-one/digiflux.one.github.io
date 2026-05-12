@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digiflux.one — Hardware RTX Graphics Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --magenta: #E8008C;
+    --magenta-dim: #8C0055;
+    --cyan: #00E5D4;
+    --orange: #FF6B35;
+    --bg: #07070D;
+    --bg2: #0E0E18;
+    --bg3: #141420;
+    --text: #F0EEF8;
+    --text-muted: #8884AA;
+    --text-dim: #4A4870;
+    --border: rgba(232,0,140,0.15);
+    --border-subtle: rgba(255,255,255,0.06);
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem; height: 60px;
+    background: rgba(7,7,13,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border-subtle);
+  }
+  .nav-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px; letter-spacing: 0.06em;
+    color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo .dot { color: var(--magenta); }
+  .nav-logo .sub {
+    font-size: 11px; color: var(--text-dim);
+    border-left: 0.5px solid var(--border-subtle);
+    padding-left: 10px; letter-spacing: 0.08em;
+  }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-links a {
+    font-size: 13px; font-weight: 500; color: var(--text-muted);
+    text-decoration: none; letter-spacing: 0.04em; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    background: var(--magenta); color: #fff;
+    padding: 8px 20px; border-radius: 2px;
+    text-decoration: none; font-weight: 500; letter-spacing: 0.05em;
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.85; color: #fff; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 120px 2.5rem 80px;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 40%, rgba(232,0,140,0.13) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 15% 65%, rgba(0,229,212,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 50% 20%, rgba(255,107,53,0.06) 0%, transparent 60%);
+  }
+  .hero-grid {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--magenta); letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 1.2rem; position: relative; z-index: 1;
+    display: flex; align-items: center; gap: 10px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-eyebrow::before {
+    content: ''; display: inline-block;
+    width: 24px; height: 1px; background: var(--magenta);
+  }
+
+  .hero-wordmark {
+    position: relative; z-index: 1;
+    margin-bottom: 0.3rem;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+  .hero-wordmark .digiflux {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 10vw, 140px);
+    line-height: 0.9; letter-spacing: 0.02em;
+    color: var(--text);
+    display: block;
+  }
+  .hero-wordmark .dot-one {
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(20px, 3vw, 38px);
+    color: var(--magenta);
+    letter-spacing: 0.04em;
+    display: block;
+    margin-top: 0.2rem;
+  }
+
+  .hero-sub {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(22px, 3vw, 40px);
+    letter-spacing: 0.08em; color: var(--text-muted);
+    position: relative; z-index: 1; margin-bottom: 2rem;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+  .hero-desc {
+    font-size: 17px; color: var(--text-muted);
+    max-width: 560px; line-height: 1.75;
+    position: relative; z-index: 1; margin-bottom: 2.5rem; font-weight: 300;
+    animation: fadeUp 0.7s 0.3s ease both;
+  }
+  .hero-actions {
+    display: flex; gap: 1rem; align-items: center;
+    position: relative; z-index: 1;
+    animation: fadeUp 0.7s 0.4s ease both;
+  }
+  .btn-primary {
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    background: var(--magenta); color: #fff;
+    padding: 14px 32px; border-radius: 2px; text-decoration: none;
+    font-weight: 500; letter-spacing: 0.08em;
+    transition: opacity 0.2s, transform 0.15s; display: inline-block;
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-ghost {
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--text-muted); padding: 14px 28px;
+    border: 0.5px solid rgba(255,255,255,0.15); border-radius: 2px;
+    text-decoration: none; letter-spacing: 0.06em;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.35); }
+
+  .hero-badges {
+    position: relative; z-index: 1; margin-top: 3rem;
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    animation: fadeUp 0.7s 0.5s ease both;
+  }
+  .badge {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.1em; color: var(--text-dim);
+    border: 0.5px solid var(--border-subtle); padding: 5px 12px;
+    border-radius: 2px; text-transform: uppercase;
+  }
+  .badge.lit { color: var(--cyan); border-color: rgba(0,229,212,0.2); }
+
+  /* ── PRODUCT SPLIT BANNER ── */
+  .split-banner {
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-top: 0.5px solid var(--border-subtle);
+    border-bottom: 0.5px solid var(--border-subtle);
+  }
+  .split-panel {
+    padding: 3.5rem 3rem;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    border-right: 0.5px solid var(--border-subtle);
+    transition: background 0.2s;
+  }
+  .split-panel:last-child { border-right: none; }
+  .split-panel:hover { background: var(--bg2); }
+  .split-tag {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim);
+  }
+  .split-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px; letter-spacing: 0.04em; color: var(--text); line-height: 1;
+  }
+  .split-name .accent { color: var(--magenta); }
+  .split-desc {
+    font-size: 14px; color: var(--text-muted); font-weight: 300;
+    line-height: 1.7; max-width: 340px;
+  }
+  .split-pill {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--magenta); border: 0.5px solid var(--border);
+    padding: 4px 10px; border-radius: 2px;
+    display: inline-block; letter-spacing: 0.08em;
+    align-self: flex-start; margin-top: 0.25rem;
+  }
+
+  /* ── SECTION COMMON ── */
+  section { padding: 100px 2.5rem; max-width: 1100px; margin: 0 auto; }
+  .section-tag {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--magenta); letter-spacing: 0.18em;
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 5vw, 64px);
+    letter-spacing: 0.03em; line-height: 1; margin-bottom: 1.2rem;
+  }
+  .section-lead {
+    font-size: 16px; color: var(--text-muted);
+    max-width: 600px; line-height: 1.8; font-weight: 300;
+  }
+  hr.divider { border: none; border-top: 0.5px solid var(--border-subtle); margin: 0; }
+
+  /* ── PIPELINE FEATURES ── */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px; border: 0.5px solid var(--border-subtle);
+    border-radius: 4px; overflow: hidden; margin-top: 3.5rem;
+  }
+  .feature-card {
+    background: var(--bg2); padding: 2rem 1.75rem; transition: background 0.2s;
+  }
+  .feature-card:hover { background: var(--bg3); }
+  .feature-icon {
+    font-family: 'DM Mono', monospace; font-size: 22px;
+    color: var(--magenta); margin-bottom: 1rem; display: block;
+  }
+  .feature-title { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; margin-bottom: 0.5rem; }
+  .feature-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; font-weight: 300; }
+
+  /* ── RA ENGINE SECTION ── */
+  .ra-section-wrap {
+    background: var(--bg2);
+    border-top: 0.5px solid var(--border-subtle);
+    border-bottom: 0.5px solid var(--border-subtle);
+  }
+  .ra-section { padding: 100px 2.5rem; max-width: 1100px; margin: 0 auto; }
+  .ra-header {
+    display: flex; align-items: flex-end;
+    justify-content: space-between; gap: 2rem;
+    margin-bottom: 3.5rem; flex-wrap: wrap;
+  }
+  .ra-title-block .section-tag { margin-bottom: 0.75rem; }
+  .ra-title-block .section-title { margin-bottom: 0.5rem; }
+  .ra-title-block .section-lead { max-width: 480px; }
+  .ra-steam-badge {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    border: 0.5px solid rgba(0,229,212,0.25); color: var(--cyan);
+    padding: 10px 18px; border-radius: 2px; letter-spacing: 0.08em;
+    text-decoration: none; white-space: nowrap; transition: background 0.2s;
+    align-self: flex-start;
+  }
+  .ra-steam-badge:hover { background: rgba(0,229,212,0.06); }
+
+  /* ── PRICING ── */
+  .pricing-layout {
+    display: grid; grid-template-columns: 320px 1fr;
+    gap: 4rem; align-items: start;
+  }
+  .price-card {
+    background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 4px; padding: 2.5rem; position: sticky; top: 80px;
+  }
+  .price-amount {
+    font-family: 'Bebas Neue', sans-serif; font-size: 72px;
+    line-height: 1; color: var(--text); letter-spacing: 0.02em;
+  }
+  .price-amount sup { font-family: 'DM Mono', monospace; font-size: 24px; vertical-align: super; color: var(--text-muted); }
+  .price-label {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 2rem; margin-top: 0.25rem;
+  }
+  .price-features { list-style: none; margin: 1.5rem 0 2rem; }
+  .price-features li {
+    font-size: 14px; color: var(--text-muted);
+    padding: 8px 0; border-bottom: 0.5px solid var(--border-subtle);
+    display: flex; align-items: flex-start; gap: 10px; font-weight: 300;
+  }
+  .price-features li::before { content: '→'; color: var(--magenta); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .price-note {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--text-dim); line-height: 1.6; letter-spacing: 0.04em;
+    padding-top: 1rem; border-top: 0.5px solid var(--border-subtle);
+  }
+
+  /* ── CHART ── */
+  .chart-side h3 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
+    letter-spacing: 0.04em; margin-bottom: 0.5rem;
+  }
+  .chart-side .sub {
+    font-size: 14px; color: var(--text-muted); font-weight: 300;
+    line-height: 1.7; margin-bottom: 2rem; max-width: 480px;
+  }
+  .engine-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .pill {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.08em; padding: 4px 10px; border-radius: 2px;
+    border: 0.5px solid var(--border-subtle); color: var(--text-dim);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .pill.ra { border-color: rgba(232,0,140,0.3); color: #E8008C; }
+  .pill.ra .dot { background: #E8008C; }
+  .pill.ue .dot { background: #888; }
+  .pill.free .dot { background: #4A4870; }
+  .chart-wrap { position: relative; width: 100%; height: 280px; margin-bottom: 1rem; }
+  .chart-note {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--text-dim); line-height: 1.7; letter-spacing: 0.03em;
+  }
+  .tiers {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--border-subtle);
+    border: 0.5px solid var(--border-subtle); border-radius: 4px;
+    overflow: hidden; margin-top: 1.5rem;
+  }
+  .tier { background: var(--bg3); padding: 1.25rem 1.5rem; }
+  .tier-range {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--text-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 0.4rem;
+  }
+  .tier-rate { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--text); line-height: 1; }
+  .tier-rate.accent { color: var(--magenta); }
+  .tier-desc { font-size: 12px; color: var(--text-dim); margin-top: 0.4rem; font-weight: 300; }
+
+  /* ── COMPARE TABLE ── */
+  .compare-table { width: 100%; border-collapse: collapse; margin-top: 2.5rem; font-size: 14px; }
+  .compare-table th {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim);
+    text-align: left; padding: 12px 20px;
+    border-bottom: 0.5px solid var(--border-subtle); font-weight: 400;
+  }
+  .compare-table td {
+    padding: 16px 20px; border-bottom: 0.5px solid var(--border-subtle);
+    color: var(--text-muted); font-weight: 300; vertical-align: middle;
+  }
+  .compare-table tr.ra-row td { background: rgba(232,0,140,0.04); color: var(--text); font-weight: 400; }
+  .compare-table tr.ra-row td:first-child { border-left: 2px solid var(--magenta); }
+  .compare-table td.highlight { color: var(--magenta); font-weight: 500; }
+  .compare-table td.good { color: var(--cyan); }
+  .compare-table td.neutral { color: var(--text-dim); }
+  .engine-name { font-weight: 500; color: var(--text); }
+
+  /* ── CROSS PROMO ── */
+  .xpromo {
+    background: var(--bg2); border: 0.5px solid var(--border-subtle);
+    border-radius: 4px; padding: 2.5rem 3rem;
+    display: flex; gap: 3rem; align-items: center;
+    margin-top: 4rem; flex-wrap: wrap;
+  }
+  .xpromo-label {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .xpromo-name {
+    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
+    color: var(--text); letter-spacing: 0.04em; line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .xpromo-desc { font-size: 14px; color: var(--text-muted); font-weight: 300; line-height: 1.7; max-width: 400px; }
+  .xpromo-link {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--cyan); border: 0.5px solid rgba(0,229,212,0.25);
+    padding: 10px 20px; border-radius: 2px; text-decoration: none;
+    letter-spacing: 0.06em; white-space: nowrap; transition: background 0.2s;
+    display: inline-block; margin-top: 1.25rem; align-self: flex-start;
+  }
+  .xpromo-link:hover { background: rgba(0,229,212,0.06); }
+
+  /* ── FAQ ── */
+  .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+  .faq-q { font-size: 15px; font-weight: 500; margin-bottom: 0.5rem; }
+  .faq-a { font-size: 14px; color: var(--text-muted); line-height: 1.75; font-weight: 300; }
+
+  /* ── CTA ── */
+  .cta-band {
+    text-align: center; padding: 100px 2.5rem;
+    background: linear-gradient(135deg, rgba(232,0,140,0.07) 0%, rgba(0,229,212,0.03) 100%);
+    border-top: 0.5px solid var(--border-subtle);
+  }
+  .cta-band .section-lead { margin: 1rem auto 2.5rem; text-align: center; }
+
+  footer {
+    padding: 2.5rem; display: flex; justify-content: space-between; align-items: center;
+    border-top: 0.5px solid var(--border-subtle);
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-dim);
+    letter-spacing: 0.05em; flex-wrap: wrap; gap: 1rem;
+  }
+  footer span { color: var(--magenta); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 1.25rem; }
+    .nav-links { display: none; }
+    section, .ra-section { padding: 60px 1.25rem; }
+    .pricing-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+    .price-card { position: static; }
+    .faq-grid { grid-template-columns: 1fr; }
+    .tiers { grid-template-columns: 1fr; }
+    .hero { padding: 100px 1.25rem 60px; }
+    .split-banner { grid-template-columns: 1fr; }
+    .split-panel { border-right: none; border-bottom: 0.5px solid var(--border-subtle); }
+    .ra-header { flex-direction: column; align-items: flex-start; }
+    footer { padding: 2rem 1.25rem; flex-direction: column; align-items: flex-start; }
+    .xpromo { flex-direction: column; gap: 1.5rem; padding: 2rem; }
+    .compare-table { font-size: 12px; }
+    .compare-table td, .compare-table th { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    DIGIFLUX<span class="dot">.ONE</span>
+    <span class="sub">∮ FLUX STUDIOS</span>
+  </div>
+  <div class="nav-links">
+    <a href="#pipeline">Pipeline</a>
+    <a href="#ra-engine">Ra Engine</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#compare">Compare</a>
+    <a href="#pricing" class="nav-cta">Buy Ra Engine — $49.99</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-eyebrow">Flux Studios · Color It Company LLC</div>
+  <div class="hero-wordmark">
+    <span class="digiflux">DIGIFLUX</span>
+    <span class="dot-one">.ONE</span>
+  </div>
+  <p class="hero-sub">Hardware RTX Graphics Pipeline</p>
+  <p class="hero-desc">
+    Cinematic ray tracing built for real hardware.
+    Theatrical-quality global illumination, physically correct lighting,
+    and a level editor you can actually own — for one flat price.
+  </p>
+  <div class="hero-actions">
+    <a href="#ra-engine" class="btn-primary">Get Ra Engine — $49.99</a>
+    <a href="#pipeline" class="btn-ghost">Explore the pipeline</a>
+  </div>
+  <div class="hero-badges">
+    <span class="badge lit">Vulkan 1.4</span>
+    <span class="badge lit">VK_KHR_ray_tracing_pipeline</span>
+    <span class="badge">GLTF 2.0</span>
+    <span class="badge">RTX 2060+</span>
+    <span class="badge">RX 6600 · Arc A380</span>
+  </div>
+</div>
+
+<!-- PRODUCT SPLIT -->
+<div class="split-banner">
+  <div class="split-panel">
+    <div class="split-tag">The pipeline</div>
+    <div class="split-name">DIGIFLUX<span class="accent">.ONE</span></div>
+    <div class="split-desc">
+      A hardware RTX rendering pipeline designed around theatrical lighting theory.
+      Full ray tracing from raygen to closesthit — no rasterization fallbacks,
+      no fake ambient terms. Real light, real shadows, real GI.
+    </div>
+    <span class="split-pill">GRAPHICS PIPELINE</span>
+  </div>
+  <div class="split-panel">
+    <div class="split-tag">The editor</div>
+    <div class="split-name">RA <span class="accent">ENGINE</span></div>
+    <div class="split-desc">
+      The level editor and developer toolchain built on top of Digiflux.one.
+      Terminal-first, GLTF 2.0 native, scene hierarchy, fly mode, light placement.
+      Available on Steam. One seat, no subscription.
+    </div>
+    <span class="split-pill">$49.99 / SEAT · ON STEAM</span>
+  </div>
+</div>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="section-tag">Digiflux.one — the pipeline</div>
+  <h2 class="section-title">Light as it<br>actually behaves</h2>
+  <p class="section-lead">
+    Digiflux.one is a Vulkan 1.4 hardware ray tracing pipeline informed by theatrical lighting
+    and McCandless method. Every photon is traced. Every surface responds correctly.
+  </p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-icon">◈</span>
+      <div class="feature-title">Full hardware RTX</div>
+      <div class="feature-desc">VK_KHR_ray_tracing_pipeline from the ground up. Reflections, refractions, and GI in a single coherent ray budget.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">◎</span>
+      <div class="feature-title">Emissive global illumination</div>
+      <div class="feature-desc">Multi-sample GI with correct Monte Carlo scaling. Light bleeds from emissive geometry — not from fake ambient terms.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">⬡</span>
+      <div class="feature-title">Theatrical lighting model</div>
+      <div class="feature-desc">McCandless method informs light placement philosophy. Inverse-square attenuation with physically calibrated intensities.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">◫</span>
+      <div class="feature-title">ACES tonemapping</div>
+      <div class="feature-desc">ACES and Gamma toggleable per session. Vivid theatrical linear or cinema-grade tone — your creative vision, your call.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">◱</span>
+      <div class="feature-title">GLTF 2.0 pipeline</div>
+      <div class="feature-desc">Full tinygltf integration. KHR_lights_punctual, KHR_materials_transmission, IOR, and Ra-native material extensions.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">⊛</span>
+      <div class="feature-title">Exponential depth fog</div>
+      <div class="feature-desc">Atmosphere that reacts to scene lighting. Fog density tunable per scene with correct interaction with GI and emissives.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- RA ENGINE -->
+<div class="ra-section-wrap" id="ra-engine">
+  <div class="ra-section">
+
+    <div class="ra-header">
+      <div class="ra-title-block">
+        <div class="section-tag">Ra Engine — the editor</div>
+        <h2 class="section-title">The tool you<br>actually own</h2>
+        <p class="section-lead">
+          Ra Engine is the level editor and developer toolchain built on Digiflux.one.
+          Terminal-first, scene hierarchy, fly mode, light placement, GLTF export.
+          Available on Steam. $49.99 per seat, one-time.
+        </p>
+      </div>
+      <a href="#" class="ra-steam-badge">Available on Steam →</a>
+    </div>
+
+    <div class="pricing-layout" id="pricing">
+      <div class="price-card">
+        <div class="price-amount"><sup>$</sup>49<sup style="font-size:32px">.99</sup></div>
+        <div class="price-label">per seat · one-time</div>
+        <ul class="price-features">
+          <li>Perpetual license — yours forever</li>
+          <li>All future updates at your purchase price</li>
+          <li>No subscription, no runtime fees, no per-install charges</li>
+          <li>Price increases with milestones — early buyers locked in</li>
+          <li>Revenue share terms fixed permanently — never change</li>
+        </ul>
+        <a href="#" class="btn-primary" style="display:block;text-align:center;margin-bottom:1rem;">
+          Buy Ra Engine on Steam
+        </a>
+        <div class="price-note">
+          BY PURCHASING YOU AGREE TO THE LICENSE TERMS.<br>
+          REVENUE SHARE IS SELF-REPORTED ANNUALLY.<br>
+          COLOR IT COMPANY LLC RESERVES AUDIT RIGHTS.
+        </div>
+      </div>
+
+      <div class="chart-side">
+        <h3>Revenue share — honest and fair</h3>
+        <p class="sub">
+          At scale, Ra Engine costs a fraction of Unreal. Thresholds reset every year —
+          a slow year costs you nothing. A great year costs you far less than you'd expect.
+        </p>
+        <div class="engine-pills">
+          <div class="pill ra"><span class="dot"></span>Ra Engine (annual)</div>
+          <div class="pill ue"><span class="dot"></span>Unreal Engine (lifetime)</div>
+          <div class="pill free"><span class="dot"></span>Godot · Unity · GameMaker</div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="pricingChart" role="img" aria-label="Royalties owed by annual gross revenue comparing Ra Engine, Unreal Engine, and free engines">Ra Engine: $3K at $250K, $8K at $500K, $18K at $1M, $28K at $2M, $58K at $5M. Unreal: $0 until $1M lifetime, $50K at $2M, $200K at $5M. Others: always $0.</canvas>
+        </div>
+        <div class="chart-note">
+          Ra Engine: 2% on annual revenue above $100K · 1% on annual revenue above $1M · resets each January<br>
+          Unreal Engine: 5% on lifetime gross above $1M · thresholds never reset<br>
+          At $5M annual gross, Ra Engine saves you $142,000 vs Unreal.
+        </div>
+        <div class="tiers">
+          <div class="tier">
+            <div class="tier-range">Under $100K / year</div>
+            <div class="tier-rate accent">0%</div>
+            <div class="tier-desc">Nothing owed. Ship freely.</div>
+          </div>
+          <div class="tier">
+            <div class="tier-range">$100K – $1M / year</div>
+            <div class="tier-rate">2%</div>
+            <div class="tier-desc">On revenue above the threshold.</div>
+          </div>
+          <div class="tier">
+            <div class="tier-range">Above $1M / year</div>
+            <div class="tier-rate">1%</div>
+            <div class="tier-desc">Rate drops as you grow.</div>
+          </div>
+          <div class="tier">
+            <div class="tier-range">Resets</div>
+            <div class="tier-rate accent">Annual</div>
+            <div class="tier-desc">A bad year costs nothing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CROSS PROMO -->
+    <div class="xpromo">
+      <div>
+        <div class="xpromo-label">Built with Ra Engine</div>
+        <div class="xpromo-name">LAUNCH UP</div>
+        <div class="xpromo-desc">
+          A vertical FPS platformer built entirely on Digiflux.one and Ra Engine.
+          Our launch title — proof that the pipeline ships real games.
+          Available on Steam.
+        </div>
+        <a href="#" class="xpromo-link">View on Steam →</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- COMPARE -->
+<section id="compare">
+  <div class="section-tag">Comparison</div>
+  <h2 class="section-title">How we stack up</h2>
+  <p class="section-lead">
+    The only hardware RTX editor with a one-time seat fee, no subscription,
+    and revenue share that rewards success instead of taxing survival.
+  </p>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Engine</th>
+        <th>Seat cost</th>
+        <th>Rev share</th>
+        <th>Threshold</th>
+        <th>Resets</th>
+        <th>Hardware RTX</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="ra-row">
+        <td><span class="engine-name">Ra Engine</span></td>
+        <td class="highlight">$49.99 once</td>
+        <td class="highlight">2% → 1%</td>
+        <td class="highlight">$100K / $1M</td>
+        <td class="good">Annual ✓</td>
+        <td class="good">Yes ✓</td>
+      </tr>
+      <tr>
+        <td><span class="engine-name">Unreal Engine</span></td>
+        <td class="neutral">Free</td>
+        <td>5%</td>
+        <td>$1M lifetime</td>
+        <td class="neutral">Never</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><span class="engine-name">Unity Pro</span></td>
+        <td>$185/mo/seat</td>
+        <td class="good">0%</td>
+        <td>N/A</td>
+        <td class="good">N/A</td>
+        <td class="neutral">Limited</td>
+      </tr>
+      <tr>
+        <td><span class="engine-name">GameMaker</span></td>
+        <td>$9.99–$79/mo</td>
+        <td class="good">0%</td>
+        <td>N/A</td>
+        <td class="good">N/A</td>
+        <td class="neutral">No</td>
+      </tr>
+      <tr>
+        <td><span class="engine-name">Godot</span></td>
+        <td class="good">Free</td>
+        <td class="good">0%</td>
+        <td>N/A</td>
+        <td class="good">N/A</td>
+        <td class="neutral">No</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="divider">
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="section-tag">Questions</div>
+  <h2 class="section-title">Straight answers</h2>
+  <div class="faq-grid">
+    <div class="faq-item">
+      <div class="faq-q">What is the relationship between Digiflux.one and Ra Engine?</div>
+      <div class="faq-a">Digiflux.one is the graphics pipeline — the renderer, the ray tracing stack, the lighting model. Ra Engine is the editor and toolchain built on top of it. When you buy Ra Engine, you get full access to the Digiflux.one pipeline.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Will the revenue share terms ever change?</div>
+      <div class="faq-a">No. The revenue share structure is permanent and will never change. This commitment is published publicly. Buy today at 2% / 1% and that is your rate forever, regardless of future seat pricing.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What happens if the seat price increases?</div>
+      <div class="faq-a">Your purchase is grandfathered at the price you paid. All future engine updates are included. Early buyers are never penalized for supporting us early.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How does the annual reset work?</div>
+      <div class="faq-a">Revenue thresholds reset each calendar year. If your game earns $80K in year one and $120K in year two, you owe nothing in year one and 2% of $20K in year two. A bad year never carries forward.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How is revenue share reported?</div>
+      <div class="faq-a">Self-reported annually. If your game exceeds the $100K threshold, you submit a report and payment by January 31 of the following year. Color It Company LLC reserves the right to audit with 30 days notice.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What hardware does Digiflux.one target?</div>
+      <div class="faq-a">RTX 2060 as the baseline, with RX 6600 and Arc A380 class hardware in scope. Full Vulkan 1.4 with VK_KHR_ray_tracing_pipeline required. No software RT fallback — this pipeline is built for real ray tracing.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-band">
+  <div class="section-tag" style="text-align:center">Get started today</div>
+  <h2 class="section-title">Build something<br>that looks <span style="color:var(--magenta)">real</span></h2>
+  <p class="section-lead">
+    One seat. Every update. Hardware RTX from day one.
+    No subscription, no runtime fees, no surprises.
+  </p>
+  <a href="#" class="btn-primary" style="font-size:15px;padding:16px 48px;">
+    Buy Ra Engine on Steam — $49.99
+  </a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>DIGIFLUX<span>.ONE</span> · ∮ Flux Studios · Color It Company LLC</div>
+  <div>Ra Engine $49.99/seat · 2% over $100K · 1% over $1M · Annual reset · Terms permanent</div>
+</footer>
+
+<script>
+  new Chart(document.getElementById('pricingChart'), {
+    type: 'bar',
+    data: {
+      labels: ['$250K', '$500K', '$1M', '$2M', '$5M'],
+      datasets: [
+        { label: 'Ra Engine (annual)', data: [3000, 8000, 18000, 28000, 58000], backgroundColor: '#E8008C', borderRadius: 3 },
+        { label: 'Unreal Engine (lifetime)', data: [0, 0, 0, 50000, 200000], backgroundColor: '#3A3A4A', borderRadius: 3 },
+        { label: 'Godot / Unity / GameMaker', data: [0, 0, 0, 0, 0], backgroundColor: '#1E1E2A', borderRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0E0E18',
+          borderColor: 'rgba(232,0,140,0.3)', borderWidth: 1,
+          titleColor: '#F0EEF8', bodyColor: '#8884AA',
+          callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#4A4870', font: { size: 11, family: "'DM Mono', monospace" } },
+          grid: { display: false },
+          border: { color: 'rgba(255,255,255,0.06)' },
+          title: { display: true, text: 'Annual gross revenue', color: '#4A4870', font: { size: 10, family: "'DM Mono', monospace" } }
+        },
+        y: {
+          ticks: { color: '#4A4870', font: { size: 10, family: "'DM Mono', monospace" }, callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0) + 'K' : v) },
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          border: { color: 'rgba(255,255,255,0.06)' },
+          title: { display: true, text: 'Royalties owed', color: '#4A4870', font: { size: 10, family: "'DM Mono', monospace" } }
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>
