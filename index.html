@@ -325,8 +325,20 @@
   .pill.free .dot { background: #4A4870; }
   .chart-wrap { position: relative; width: 100%; height: 280px; margin-bottom: 1rem; }
   .chart-note {
-    font-family: 'DM Mono', monospace; font-size: 10px;
-    color: var(--text-dim); line-height: 1.7; letter-spacing: 0.03em;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: #9A96B8; letter-spacing: 0.03em;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .chart-note-row {
+    display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;
+  }
+  .chart-note-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 4px;
+  }
+  .chart-note-savings {
+    margin-top: 4px; padding-top: 8px;
+    border-top: 0.5px solid var(--border-subtle);
   }
   .tiers {
     display: grid; grid-template-columns: 1fr 1fr;
@@ -603,9 +615,9 @@
           <canvas id="pricingChart" role="img" aria-label="Royalties owed by annual gross revenue comparing Ra Engine, Unreal Engine, and free engines">Ra Engine: $3K at $250K, $8K at $500K, $18K at $1M, $28K at $2M, $58K at $5M. Unreal: $0 until $1M lifetime, $50K at $2M, $200K at $5M. Others: always $0.</canvas>
         </div>
         <div class="chart-note">
-          Ra Engine: 2% on annual revenue above $100K · 1% on annual revenue above $1M · resets each January<br>
-          Unreal Engine: 5% on lifetime gross above $1M · thresholds never reset<br>
-          At $5M annual gross, Ra Engine saves you $142,000 vs Unreal.
+          <span style="color:#C4527A">Ra Engine</span> — 2% on annual revenue above $100K · 1% above $1M · resets each January<br><br>
+          <span style="color:#7A7896">Unreal Engine</span> — 5% on lifetime gross above $1M · thresholds never reset<br><br>
+          At $5M annual gross, Ra Engine saves you <span style="color:#42B5AE">$142,000</span> vs Unreal.
         </div>
         <div class="tiers">
           <div class="tier">
