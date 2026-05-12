@@ -429,23 +429,29 @@
   }
 
   @media (max-width: 768px) {
+    html, body { width: 100%; overflow-x: hidden; }
     nav { padding: 0 1.25rem; }
     .nav-links { display: none; }
-    section, .ra-section { padding: 60px 1.25rem; }
-    .pricing-layout { grid-template-columns: 1fr; gap: 2.5rem; }
-    .price-card { position: static; }
-    .faq-grid { grid-template-columns: 1fr; }
-    .tiers { grid-template-columns: 1fr; }
+    section, .ra-section { padding: 60px 1.25rem; max-width: 100%; width: 100%; }
     .hero { padding: 100px 1.25rem 60px; }
-    .split-banner { grid-template-columns: 1fr; }
-    .split-panel { border-right: none; border-bottom: 0.5px solid var(--border-subtle); }
-    .ra-header { flex-direction: column; align-items: flex-start; }
-    footer { padding: 2rem 1.25rem; flex-direction: column; align-items: flex-start; }
-    .xpromo { flex-direction: column; gap: 1.5rem; padding: 2rem; }
-    .compare-table { font-size: 12px; }
-    .compare-table td, .compare-table th { padding: 10px 12px; }
-    .chart-note { font-size: 21px; width: 100%; }
+    .hero-desc { max-width: 100%; }
+    .split-banner { grid-template-columns: 1fr; width: 100%; }
+    .split-panel { border-right: none; border-bottom: 0.5px solid var(--border-subtle); padding: 2rem 1.25rem; }
+    .pricing-layout { grid-template-columns: 1fr; gap: 2.5rem; width: 100%; }
+    .price-card { position: static; width: 100%; }
+    .chart-side { width: 100%; }
     .chart-wrap { width: 100%; }
+    .chart-note { font-size: 21px; width: 100%; }
+    .tiers { grid-template-columns: 1fr; width: 100%; }
+    .faq-grid { grid-template-columns: 1fr; }
+    .ra-header { flex-direction: column; align-items: flex-start; }
+    .xpromo { flex-direction: column; gap: 1.5rem; padding: 2rem 1.25rem; width: 100%; }
+    .xpromo-desc { max-width: 100%; }
+    .cta-band { padding: 60px 1.25rem; }
+    .features-grid { grid-template-columns: 1fr; }
+    .compare-table { font-size: 12px; width: 100%; display: block; overflow-x: auto; }
+    .compare-table td, .compare-table th { padding: 10px 12px; }
+    footer { padding: 2rem 1.25rem; flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
