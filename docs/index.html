@@ -486,6 +486,11 @@ footer a:hover { color: var(--orange); }
     <a class="nav-item" href="#pitfalls">Critical Pitfalls</a>
   </div>
   <div class="nav-section">
+    <div class="nav-label">Scripting</div>
+    <a class="nav-item" href="#lua">Lua Scripting</a>
+    <a class="nav-item sub" href="lua-api.html">→ Full API Reference</a>
+  </div>
+  <div class="nav-section">
     <div class="nav-label">Products</div>
     <a class="nav-item" href="#products">Built with Ra</a>
   </div>
@@ -872,9 +877,57 @@ footer a:hover { color: var(--orange); }
   </table>
 </section>
 
+<!-- LUA SCRIPTING -->
+<section class="doc-section" id="lua">
+  <h2><span class="accent">12.</span> Lua Scripting</h2>
+
+  <p>Ra Engine drives game logic through Lua scripts. Drop a <code>.lua</code> file in <code>scripts/</code> and the full engine API is available as the global table <code>engine</code>. No recompile needed — scripts hot-reload live on save.</p>
+
+  <h3>Script Contract</h3>
+  <p>Every script must define three global functions the engine calls automatically:</p>
+
+  <table>
+    <tr><th>Function</th><th>When called</th></tr>
+    <tr><td>function init()</td><td>Once on load and again after every hot-reload. Re-discover object IDs here.</td></tr>
+    <tr><td>function update(dt)</td><td>Every frame before rendering. <code>dt</code> = delta seconds.</td></tr>
+    <tr><td>function shutdown()</td><td>On engine exit. Write persistent state via <code>engine.set_var()</code>.</td></tr>
+    <tr><td>function get_status_line()</td><td>Optional. Return a short string for the terminal status footer.</td></tr>
+  </table>
+
+  <h3>Hot-Reload</h3>
+  <p>The engine <code>stat()</code>s the script file every frame. On mtime change it tears down the Lua state, reopens it, and calls <code>init()</code> again. <strong>Lua variables do not survive hot-reload</strong> — persist anything important with <code>engine.set_var()</code>, which lives in C++ and is unaffected by Lua restarts.</p>
+
+  <h3>Quick Example</h3>
+  <pre data-label="lua"><code><span class="kw">local</span> goal_id = <span class="nm">0</span>
+<span class="kw">local</span> score   = <span class="nm">0.0</span>
+
+<span class="kw">function</span> <span class="fn">init</span>()
+    goal_id = <span class="fn">engine.find_object</span>(<span class="st">"goal_pad"</span>)
+    score   = <span class="fn">engine.get_var</span>(<span class="st">"game.score"</span>, <span class="nm">0.0</span>)
+<span class="kw">end</span>
+
+<span class="kw">function</span> <span class="fn">update</span>(dt)
+    <span class="kw">local</span> _, y, _ = <span class="fn">engine.get_camera_position</span>()
+    score = y * <span class="nm">100.0</span>
+    <span class="fn">engine.set_hud_data</span>(score, y)
+
+    <span class="kw">if</span> goal_id ~= <span class="nm">0</span> <span class="kw">and</span> <span class="fn">engine.player_overlaps_object</span>(goal_id) <span class="kw">then</span>
+        <span class="fn">engine.print_status</span>(<span class="st">"★ LEVEL COMPLETE!"</span>)
+    <span class="kw">end</span>
+<span class="kw">end</span>
+
+<span class="kw">function</span> <span class="fn">shutdown</span>()
+    <span class="fn">engine.set_var</span>(<span class="st">"game.score"</span>, score)
+<span class="kw">end</span></code></pre>
+
+  <div class="callout callout-cyan">
+    <strong>Full API reference →</strong> <a href="lua-api.html">digiflux.one/docs/lua-api</a> — all 30 engine functions documented with signatures, parameters, and examples.
+  </div>
+</section>
+
 <!-- PRODUCTS -->
 <section class="doc-section" id="products">
-  <h2><span class="accent">12.</span> Built with Ra Engine</h2>
+  <h2><span class="accent">13.</span> Built with Ra Engine</h2>
 
   <div class="card-grid" style="max-width: 320px;">
     <div class="card">
@@ -900,6 +953,7 @@ footer a:hover { color: var(--orange); }
   <span class="footer-logo">digiflux.one</span>
   <a href="https://digiflux.one">digiflux.one</a>
   <a href="https://digiflux.one/docs">docs</a>
+  <a href="lua-api.html">lua api</a>
   <span>Ra Engine &copy; 2025 Color It Company LLC — Flux Studios ∮</span>
 </footer>
 
