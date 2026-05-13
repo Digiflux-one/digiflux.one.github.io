@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ra Engine — Lua API Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0908;
+  --bg2: #110f0d;
+  --bg3: #1a1714;
+  --surface: #1e1b18;
+  --surface2: #252118;
+  --border: rgba(255,160,60,0.12);
+  --border2: rgba(255,160,60,0.22);
+  --orange: #ff7c2a;
+  --orange-dim: rgba(255,124,42,0.15);
+  --cyan: #2afff4;
+  --cyan-dim: rgba(42,255,244,0.12);
+  --purple: #a078ff;
+  --purple-dim: rgba(160,120,255,0.12);
+  --text: #f0ece6;
+  --text2: #a09888;
+  --text3: #6a6055;
+  --magenta: #ff2d8f;
+  --sidebar-w: 260px;
+  --header-h: 56px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+a { color: var(--cyan); text-decoration: none; }
+a:hover { color: var(--orange); }
+
+/* ── HEADER ── */
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--header-h);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 2rem;
+  gap: 1.5rem;
+}
+.logo {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+  letter-spacing: -0.02em; color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-mark {
+  width: 28px; height: 28px; background: var(--orange);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: #000;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+.logo-sub {
+  font-size: 11px; color: var(--text3); font-weight: 400;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  border-left: 1px solid var(--border2); padding-left: 1rem; margin-left: 0.5rem;
+}
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+.badge {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 8px; border: 1px solid var(--border2);
+  color: var(--text3); border-radius: 3px;
+}
+.badge-orange { border-color: var(--orange); color: var(--orange); }
+.badge-cyan   { border-color: var(--cyan);   color: var(--cyan);   }
+.badge-purple { border-color: var(--purple); color: var(--purple); }
+
+/* ── LAYOUT ── */
+.layout { display: flex; padding-top: var(--header-h); min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+nav {
+  width: var(--sidebar-w); position: fixed;
+  top: var(--header-h); bottom: 0; left: 0;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 1.5rem 0;
+}
+nav::-webkit-scrollbar { width: 4px; }
+nav::-webkit-scrollbar-track { background: transparent; }
+nav::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.nav-section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
+.nav-label {
+  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 0.5rem; padding: 0 0.25rem;
+}
+.nav-item {
+  display: block; padding: 5px 8px; border-radius: 4px;
+  color: var(--text2); font-size: 12.5px; transition: all 0.15s;
+  margin-bottom: 1px; border-left: 2px solid transparent;
+}
+.nav-item:hover { color: var(--text); background: var(--surface); border-left-color: var(--border2); }
+.nav-item.active { color: var(--orange); background: var(--orange-dim); border-left-color: var(--orange); }
+.nav-item.sub { padding-left: 20px; font-size: 11.5px; color: var(--text3); }
+.nav-item.sub:hover { color: var(--text2); }
+
+/* ── MAIN ── */
+main { margin-left: var(--sidebar-w); flex: 1; max-width: 860px; padding: 3rem 3.5rem; }
+
+/* ── SECTIONS ── */
+.doc-section { margin-bottom: 4rem; scroll-margin-top: calc(var(--header-h) + 2rem); }
+
+h1 {
+  font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800;
+  letter-spacing: -0.03em; color: var(--text); line-height: 1.1; margin-bottom: 0.75rem;
+}
+h1 span { color: var(--orange); }
+.hero-sub { font-size: 14px; color: var(--text2); max-width: 580px; margin-bottom: 2rem; line-height: 1.6; }
+
+h2 {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700;
+  letter-spacing: -0.02em; color: var(--text); margin-bottom: 1rem;
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+}
+h2 .accent { color: var(--orange); }
+
+h3 {
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600;
+  color: var(--cyan); margin: 1.75rem 0 0.6rem; letter-spacing: 0.02em;
+}
+
+p { color: var(--text2); margin-bottom: 0.9rem; line-height: 1.75; }
+p strong { color: var(--text); font-weight: 500; }
+ul, ol { color: var(--text2); padding-left: 1.5rem; margin-bottom: 0.9rem; }
+li { margin-bottom: 0.3rem; line-height: 1.7; }
+li strong { color: var(--text); }
+
+/* ── CODE ── */
+code {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  background: var(--surface); color: var(--cyan);
+  padding: 2px 6px; border-radius: 3px; border: 1px solid var(--border);
+}
+pre {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 1.25rem 1.5rem;
+  overflow-x: auto; margin: 1rem 0 1.5rem; position: relative;
+}
+pre::before {
+  content: attr(data-label); position: absolute; top: 10px; right: 12px;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3);
+}
+pre code {
+  background: none; border: none; padding: 0;
+  color: var(--text2); font-size: 12.5px; line-height: 1.9;
+}
+.kw { color: var(--orange); }
+.cm { color: var(--text3); font-style: italic; }
+.st { color: var(--cyan); }
+.fn { color: var(--purple); }
+.nm { color: #ff9f6e; }
+.k2 { color: #ffca80; }
+
+/* ── CALLOUTS ── */
+.callout {
+  border-radius: 6px; padding: 1rem 1.25rem; margin: 1.25rem 0;
+  border-left: 3px solid; font-size: 13px;
+}
+.callout-orange  { background: var(--orange-dim);            border-color: var(--orange); color: var(--text2); }
+.callout-cyan    { background: var(--cyan-dim);              border-color: var(--cyan);   color: var(--text2); }
+.callout-purple  { background: var(--purple-dim);            border-color: var(--purple); color: var(--text2); }
+.callout-danger  { background: rgba(255,60,60,0.1);          border-color: #ff4444;       color: var(--text2); }
+.callout strong  { color: var(--text); }
+
+/* ── TABLES ── */
+table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 12.5px; }
+th {
+  text-align: left; padding: 8px 12px; background: var(--surface);
+  color: var(--text3); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  border-bottom: 1px solid var(--border2);
+}
+td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+td:first-child { color: var(--orange); font-family: 'JetBrains Mono', monospace; }
+td code { font-size: 11.5px; }
+tr:hover td { background: var(--surface); }
+
+/* ── API ENTRY BLOCKS ── */
+.api-block {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; margin: 1.25rem 0; overflow: hidden;
+}
+.api-block-header {
+  background: var(--surface); padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+}
+.api-sig {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: var(--text); flex: 1;
+}
+.api-sig .fn-name { color: var(--cyan); }
+.api-sig .param   { color: #ff9f6e; }
+.api-sig .ret     { color: var(--purple); }
+.api-tag {
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 3px; border: 1px solid;
+  white-space: nowrap;
+}
+.api-tag-get    { color: var(--cyan);   border-color: rgba(42,255,244,0.3);   background: var(--cyan-dim); }
+.api-tag-set    { color: var(--orange); border-color: rgba(255,124,42,0.35);  background: var(--orange-dim); }
+.api-tag-query  { color: var(--purple); border-color: rgba(160,120,255,0.3);  background: var(--purple-dim); }
+.api-tag-action { color: #a0c8ff;       border-color: rgba(160,200,255,0.25); background: rgba(160,200,255,0.07); }
+
+.api-block-body { padding: 1rem 1.25rem; }
+.api-block-body p { margin-bottom: 0.6rem; font-size: 13px; }
+.api-block-body p:last-child { margin-bottom: 0; }
+
+.api-params { margin-top: 0.75rem; }
+.api-param-row {
+  display: flex; gap: 1rem; align-items: baseline;
+  padding: 5px 0; border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+.api-param-name { color: #ff9f6e; min-width: 120px; font-family: 'JetBrains Mono', monospace; }
+.api-param-type { color: var(--purple); min-width: 80px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.api-param-desc { color: var(--text2); }
+
+/* ── TAGS ── */
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0.75rem 0; }
+.tag { font-size: 10px; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 3px; background: var(--surface2); border: 1px solid var(--border); color: var(--text3); }
+.tag-orange { border-color: rgba(255,124,42,0.4); color: var(--orange); }
+.tag-cyan   { border-color: rgba(42,255,244,0.3); color: var(--cyan); }
+.tag-purple { border-color: rgba(160,120,255,0.3); color: var(--purple); }
+
+/* ── KEY CONSTANTS TABLE ── */
+.key-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px; margin: 1rem 0;
+}
+.key-row {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 6px 12px; font-size: 12px;
+}
+.key-name { color: var(--orange); font-family: 'JetBrains Mono', monospace; }
+.key-val  { color: var(--text3); }
+
+/* ── SCROLL PROGRESS ── */
+.progress-bar { position: fixed; top: var(--header-h); left: 0; right: 0; height: 2px; background: var(--border); z-index: 99; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--orange), var(--cyan)); transition: width 0.1s; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+/* ── FOOTER ── */
+footer {
+  margin-left: var(--sidebar-w); padding: 2rem 3.5rem;
+  border-top: 1px solid var(--border); font-size: 11px; color: var(--text3);
+  display: flex; gap: 2rem; align-items: center;
+}
+footer a { color: var(--text3); }
+footer a:hover { color: var(--orange); }
+.footer-logo { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--text2); margin-right: auto; }
+
+.version-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<header>
+  <div class="logo">
+    <span class="logo-mark">Ra</span>
+    Ra Engine
+    <span class="logo-sub">Lua API Reference</span>
+  </div>
+  <div class="header-right">
+    <a href="index.html" class="badge">← Main Docs</a>
+    <span class="badge badge-purple">Lua 5.x</span>
+    <span class="badge badge-orange">Hot-Reload</span>
+    <span class="badge badge-cyan">scripts/</span>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav>
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a class="nav-item active" href="#overview">Introduction</a>
+    <a class="nav-item" href="#contract">Script Contract</a>
+    <a class="nav-item" href="#hotreload">Hot-Reload</a>
+    <a class="nav-item" href="#state">Persisting State</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Engine API</div>
+    <a class="nav-item" href="#camera">Camera</a>
+    <a class="nav-item" href="#physics">Physics</a>
+    <a class="nav-item" href="#input">Input</a>
+    <a class="nav-item" href="#time">Time</a>
+    <a class="nav-item" href="#objects">Scene Objects</a>
+    <a class="nav-item sub" href="#object-transform">Transform</a>
+    <a class="nav-item sub" href="#object-visual">Visual</a>
+    <a class="nav-item sub" href="#object-collision">Collision</a>
+    <a class="nav-item" href="#scene-queries">Scene Queries</a>
+    <a class="nav-item" href="#scene-loading">Scene Loading</a>
+    <a class="nav-item" href="#checkpoints">Checkpoints</a>
+    <a class="nav-item" href="#variables">Game Variables</a>
+    <a class="nav-item" href="#hud">HUD &amp; Status</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Reference</div>
+    <a class="nav-item" href="#key-constants">Key Constants</a>
+    <a class="nav-item" href="#example">Full Example</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+<!-- OVERVIEW -->
+<section class="doc-section" id="overview">
+  <div class="version-row">
+    <span class="tag tag-purple">Lua 5.x</span>
+    <span class="tag tag-orange">LuaGameModule</span>
+    <span class="tag tag-cyan">scripts/launch_up.lua</span>
+  </div>
+  <h1>Lua <span>API</span></h1>
+  <p class="hero-sub">Ra Engine's game logic layer. Drop a <code>.lua</code> script in <code>scripts/</code>, point the engine at it, and the full engine API is available as the global table <code>engine</code>. Changes to the script hot-reload live — no recompile needed.</p>
+
+  <div class="callout callout-cyan">
+    <strong>Game code is isolated.</strong> Lua scripts never include Vulkan, GLFW, or engine headers. All engine access goes through the <code>engine</code> global. This lets you iterate on game logic independently of the graphics pipeline.
+  </div>
+</section>
+
+<!-- CONTRACT -->
+<section class="doc-section" id="contract">
+  <h2><span class="accent">01.</span> Script Contract</h2>
+  <p>Every Ra Engine Lua script must define these global functions. The engine calls them automatically.</p>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="kw">function</span> <span class="fn-name">init</span>()</span>
+      <span class="api-tag api-tag-action">required</span>
+    </div>
+    <div class="api-block-body">
+      <p>Called once when the script first loads, and again on every hot-reload. Use this to look up object IDs with <code>engine.find_object()</code>, set initial positions, and read any persisted state from <code>engine.get_var()</code>.</p>
+      <p>Do not cache object IDs across hot-reloads in module-level Lua variables — the scene may have changed. Always re-discover them inside <code>init()</code>.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="kw">function</span> <span class="fn-name">update</span>(<span class="param">dt</span>)</span>
+      <span class="api-tag api-tag-action">required</span>
+    </div>
+    <div class="api-block-body">
+      <p>Called every frame before rendering. <code>dt</code> is the frame delta time in seconds (capped; safe for physics). All game logic, input polling, scoring, and object movement goes here.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">dt</span><span class="api-param-type">float</span><span class="api-param-desc">Seconds elapsed since the last frame. Capped to prevent physics explosion on lag spikes.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="kw">function</span> <span class="fn-name">shutdown</span>()</span>
+      <span class="api-tag api-tag-action">required</span>
+    </div>
+    <div class="api-block-body">
+      <p>Called on engine exit (before Vulkan teardown). Save any game state that must survive process restart using <code>engine.set_var()</code>. This is your last chance to write persistent data.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="kw">function</span> <span class="fn-name">get_status_line</span>() <span class="ret">→ string</span></span>
+      <span class="api-tag api-tag-get">optional</span>
+    </div>
+    <div class="api-block-body">
+      <p>Return a short string shown in the engine's terminal status area (bottom line). Called every frame. Return <code>""</code> to show nothing. Keep it under ~80 characters for clean display.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOT RELOAD -->
+<section class="doc-section" id="hotreload">
+  <h2><span class="accent">02.</span> Hot-Reload</h2>
+  <p>Every frame, the engine <code>stat()</code>s the script file. If the modification time has changed, it automatically:</p>
+  <ol>
+    <li>Calls <code>shutdown()</code> on the current Lua state</li>
+    <li>Destroys the old <code>lua_State</code></li>
+    <li>Opens a fresh state, re-binds the full engine API</li>
+    <li>Runs the script file</li>
+    <li>Calls <code>init()</code> again</li>
+  </ol>
+
+  <div class="callout callout-orange">
+    <strong>Lua variables do not survive hot-reload.</strong> Any local Lua state (local variables, tables, closures) is destroyed when the <code>lua_State</code> is torn down. Only values written to <code>engine.set_var()</code> survive — they live in C++ and are unaffected by Lua restarts.
+  </div>
+
+  <p>If the reloaded script has a syntax or runtime error, the engine keeps the previous working state and suppresses further reload attempts until the file is saved again.</p>
+</section>
+
+<!-- STATE -->
+<section class="doc-section" id="state">
+  <h2><span class="accent">03.</span> Persisting State</h2>
+  <p>Use <code>engine.set_var()</code> / <code>engine.get_var()</code> for any value that must survive hot-reloads, level transitions, or be shared between <code>update()</code> and <code>shutdown()</code>.</p>
+
+  <pre data-label="lua"><code><span class="kw">function</span> <span class="fn">init</span>()
+    <span class="cm">-- Read back values saved from a previous session or hot-reload</span>
+    score       = <span class="fn">engine.get_var</span>(<span class="st">"game.score"</span>,       <span class="nm">0.0</span>)
+    peak_height = <span class="fn">engine.get_var</span>(<span class="st">"game.peak_height"</span>, <span class="nm">0.0</span>)
+    level       = <span class="fn">engine.get_var</span>(<span class="st">"game.level"</span>,       <span class="nm">1.0</span>)
+<span class="kw">end</span>
+
+<span class="kw">function</span> <span class="fn">shutdown</span>()
+    <span class="cm">-- Write everything back before the engine exits</span>
+    <span class="fn">engine.set_var</span>(<span class="st">"game.score"</span>,       score)
+    <span class="fn">engine.set_var</span>(<span class="st">"game.peak_height"</span>, peak_height)
+    <span class="fn">engine.set_var</span>(<span class="st">"game.level"</span>,       level)
+<span class="kw">end</span></code></pre>
+
+  <div class="callout callout-purple">
+    <strong>Namespace your keys.</strong> Prefix all variable keys with your game name (e.g. <code>"launch_up.score"</code>) to avoid collisions if multiple scripts are used across levels.
+  </div>
+</section>
+
+<!-- CAMERA -->
+<section class="doc-section" id="camera">
+  <h2><span class="accent">04.</span> Camera</h2>
+  <p>The camera <em>is</em> the player in first-person mode. Moving the camera moves the player. Physics and collision are resolved relative to the camera position.</p>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_camera_position</span>() <span class="ret">→ x, y, z</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns the camera's world-space position as three separate floats. Y is vertical.</p>
+      <pre data-label="lua"><code><span class="kw">local</span> x, y, z = <span class="fn">engine.get_camera_position</span>()
+<span class="fn">engine.print_status</span>(<span class="st">"Height: "</span> .. string.<span class="fn">format</span>(<span class="st">"%.1f"</span>, y) .. <span class="st">"m"</span>)</code></pre>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_camera_position</span>(<span class="param">x, y, z</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Teleports the camera (and player) to the given world-space position. Used for respawning and level start placement. Call <code>engine.set_vertical_velocity(0.0)</code> immediately after to clear any falling momentum.</p>
+      <pre data-label="lua"><code><span class="kw">local</span> cx, cy, cz = <span class="fn">engine.get_checkpoint</span>()
+<span class="fn">engine.set_camera_position</span>(cx, cy, cz)
+<span class="fn">engine.set_vertical_velocity</span>(<span class="nm">0.0</span>)</code></pre>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_camera_forward</span>() <span class="ret">→ x, y, z</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns the normalised camera look direction. Useful for shooting projectiles, detecting what the player is looking at, or directional movement in non-physics contexts.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_camera_right</span>() <span class="ret">→ x, y, z</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns the normalised camera right vector (perpendicular to forward, in the horizontal plane). Use with forward for strafe-relative logic.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PHYSICS -->
+<section class="doc-section" id="physics">
+  <h2><span class="accent">05.</span> Physics</h2>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_physics_state</span>() <span class="ret">→ table</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns a table describing the player's current physics state.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">is_grounded</span><span class="api-param-type">bool</span><span class="api-param-desc">True if the player is standing on solid geometry this frame.</span></div>
+        <div class="api-param-row"><span class="api-param-name">is_jumping</span><span class="api-param-type">bool</span><span class="api-param-desc">True during the upward arc of a jump.</span></div>
+        <div class="api-param-row"><span class="api-param-name">vertical_velocity</span><span class="api-param-type">float</span><span class="api-param-desc">Current vertical speed in m/s. Negative = falling.</span></div>
+      </div>
+      <pre data-label="lua"><code><span class="kw">local</span> ps = <span class="fn">engine.get_physics_state</span>()
+<span class="kw">if</span> ps.is_grounded <span class="kw">then</span>
+    <span class="cm">-- can jump</span>
+<span class="kw">end</span></code></pre>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_vertical_velocity</span>(<span class="param">v</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Directly sets the player's vertical velocity. Use to trigger a jump (<code>8.5</code>) or cancel falling momentum (<code>0.0</code>) on respawn.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">v</span><span class="api-param-type">float</span><span class="api-param-desc">Velocity in m/s. Positive = upward. Engine gravity is −18.0 m/s².</span></div>
+      </div>
+      <pre data-label="lua"><code><span class="cm">-- Trigger jump from Lua</span>
+<span class="kw">local</span> ps = <span class="fn">engine.get_physics_state</span>()
+<span class="kw">if</span> ps.is_grounded <span class="kw">then</span>
+    <span class="fn">engine.set_vertical_velocity</span>(<span class="nm">8.5</span>)
+<span class="kw">end</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- INPUT -->
+<section class="doc-section" id="input">
+  <h2><span class="accent">06.</span> Input</h2>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_input</span>() <span class="ret">→ table</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns a snapshot of the current frame's input state. Read this once per <code>update()</code> — it's valid for the duration of that call.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">key_down</span><span class="api-param-type">table</span><span class="api-param-desc">Indexed by GLFW key code. <code>true</code> if the key is currently held. Use for continuous actions (movement, holding fire).</span></div>
+        <div class="api-param-row"><span class="api-param-name">key_just_pressed</span><span class="api-param-type">table</span><span class="api-param-desc"><code>true</code> only on the single frame the key transitioned from up to down. Use for discrete actions (jump, interact, menu).</span></div>
+        <div class="api-param-row"><span class="api-param-name">mouse_delta_x</span><span class="api-param-type">float</span><span class="api-param-desc">Mouse horizontal movement this frame in pixels.</span></div>
+        <div class="api-param-row"><span class="api-param-name">mouse_delta_y</span><span class="api-param-type">float</span><span class="api-param-desc">Mouse vertical movement this frame in pixels.</span></div>
+      </div>
+      <pre data-label="lua"><code><span class="kw">local</span> inp = <span class="fn">engine.get_input</span>()
+
+<span class="cm">-- Held key — movement</span>
+<span class="kw">if</span> inp.key_down[KEY_W] <span class="kw">then</span>
+    <span class="cm">-- move forward</span>
+<span class="kw">end</span>
+
+<span class="cm">-- One-shot key — jump</span>
+<span class="kw">if</span> inp.key_just_pressed[KEY_SPACE] <span class="kw">then</span>
+    <span class="fn">engine.set_vertical_velocity</span>(<span class="nm">8.5</span>)
+<span class="kw">end</span>
+
+<span class="cm">-- Level advance</span>
+<span class="kw">if</span> inp.key_just_pressed[KEY_N] <span class="kw">then</span>
+    <span class="fn">engine.load_scene</span>(<span class="st">"scenes/launch_up_level2.gltf"</span>)
+<span class="kw">end</span></code></pre>
+    </div>
+  </div>
+
+  <div class="callout callout-orange">
+    <strong>key_just_pressed is edge-triggered.</strong> It is <code>true</code> for exactly one frame. Do not check it inside a loop or across multiple <code>update()</code> calls — you will miss it. Always read input once at the top of <code>update()</code>.
+  </div>
+</section>
+
+<!-- TIME -->
+<section class="doc-section" id="time">
+  <h2><span class="accent">07.</span> Time</h2>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_time</span>() <span class="ret">→ double</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns wall-clock seconds as a double. Use for animations, pulse effects, and time-based events. Always increasing — not affected by pause or frame rate.</p>
+      <pre data-label="lua"><code><span class="kw">local</span> t = <span class="fn">engine.get_time</span>()
+<span class="kw">local</span> pulse = (math.<span class="fn">sin</span>(t * <span class="nm">2.0</span> * math.pi * <span class="nm">1.5</span>) + <span class="nm">1.0</span>) * <span class="nm">0.5</span>
+<span class="fn">engine.set_object_emissive</span>(glow_id, <span class="nm">0.0</span>, <span class="nm">1.0</span>, <span class="nm">0.9</span>, <span class="nm">2.0</span> + pulse * <span class="nm">3.0</span>)</code></pre>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_delta_time</span>() <span class="ret">→ float</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns the same <code>dt</code> that was passed to <code>update(dt)</code>. Provided as a convenience for helper functions that don't receive <code>dt</code> as a parameter.</p>
+    </div>
+  </div>
+</section>
+
+<!-- OBJECTS -->
+<section class="doc-section" id="objects">
+  <h2><span class="accent">08.</span> Scene Objects</h2>
+  <p>Scene objects are identified by a <strong>uint32 ID</strong> assigned at load time. IDs are stable within a scene session but must be re-acquired after a scene reload or hot-reload — always call <code>engine.find_object()</code> inside <code>init()</code>.</p>
+
+  <div class="callout callout-cyan">
+    <strong>ID 0 means not found.</strong> <code>engine.find_object()</code> returns <code>0</code> when no object with that name exists. Always check before using.
+  </div>
+
+  <h3 id="object-transform">Transform</h3>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.find_object</span>(<span class="param">name</span>) <span class="ret">→ id</span></span>
+      <span class="api-tag api-tag-query">query</span>
+    </div>
+    <div class="api-block-body">
+      <p>Looks up a scene object by its GLTF node name. Returns the integer ID, or <code>0</code> if no object with that name exists in the current scene.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">name</span><span class="api-param-type">string</span><span class="api-param-desc">Exact GLTF node name (case-sensitive, matches <code>ra_label</code> in the scene file).</span></div>
+      </div>
+      <pre data-label="lua"><code><span class="kw">function</span> <span class="fn">init</span>()
+    goal_id = <span class="fn">engine.find_object</span>(<span class="st">"goal_pad"</span>)
+    <span class="kw">if</span> goal_id == <span class="nm">0</span> <span class="kw">then</span>
+        <span class="fn">engine.print_status</span>(<span class="st">"WARNING: goal_pad not found in scene"</span>)
+    <span class="kw">end</span>
+<span class="kw">end</span></code></pre>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.object_exists</span>(<span class="param">id</span>) <span class="ret">→ bool</span></span>
+      <span class="api-tag api-tag-query">query</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns <code>true</code> if <code>id</code> is non-zero and present in the current scene. Useful as a guard before transform calls.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_object_position</span>(<span class="param">id</span>) <span class="ret">→ x, y, z</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns the world-space position of the object's transform origin as three floats.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_object_position</span>(<span class="param">id, x, y, z</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Moves the object to the given world-space position. Internally rewrites vertex data, re-uploads via staging, and rebuilds the BLAS/TLAS. The rebuild is transparent — call freely each frame for moving platforms, hazards, etc.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">id</span><span class="api-param-type">uint32</span><span class="api-param-desc">Object ID from <code>find_object()</code>.</span></div>
+        <div class="api-param-row"><span class="api-param-name">x, y, z</span><span class="api-param-type">float</span><span class="api-param-desc">Target world-space position.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_object_rotation</span>(<span class="param">id</span>) <span class="ret">→ x, y, z</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns Euler rotation in degrees (YXZ order, matching the Ra Engine editor).</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_object_rotation</span>(<span class="param">id, x, y, z</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Sets Euler rotation in degrees (YXZ order). Use for rotating hazard platforms, spinning collectibles, or animated scene elements.</p>
+      <pre data-label="lua"><code><span class="cm">-- Rotate a hazard platform 45°/sec on Y axis</span>
+spinner_angle = (spinner_angle + <span class="nm">45.0</span> * dt) % <span class="nm">360.0</span>
+<span class="fn">engine.set_object_rotation</span>(spinner_id, <span class="nm">0.0</span>, spinner_angle, <span class="nm">0.0</span>)</code></pre>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_object_scale</span>(<span class="param">id</span>) <span class="ret">→ sx, sy, sz</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns the current scale of the object as three floats. Default scale is <code>1, 1, 1</code>. Minimum per-axis value enforced by the engine: <code>0.01</code>.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_object_scale</span>(<span class="param">id, s</span>) &nbsp;<span style="color:var(--text3)">or</span>&nbsp; <span class="fn-name">engine.set_object_scale</span>(<span class="param">id, sx, sy, sz</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Sets object scale. Pass one value for uniform scale; pass three for non-uniform. Minimum component is <code>0.01</code>.</p>
+      <pre data-label="lua"><code><span class="fn">engine.set_object_scale</span>(crystal_id, <span class="nm">2.0</span>)              <span class="cm">-- uniform 2×</span>
+<span class="fn">engine.set_object_scale</span>(platform_id, <span class="nm">3.0</span>, <span class="nm">0.5</span>, <span class="nm">3.0</span>)  <span class="cm">-- wide flat slab</span></code></pre>
+    </div>
+  </div>
+
+  <h3 id="object-visual">Visual</h3>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_object_emissive</span>(<span class="param">id, r, g, b [, intensity]</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Sets the emissive colour and intensity of an object at runtime. Drives RTX global illumination — nearby geometry will be lit by the emissive surface. <code>intensity</code> defaults to <code>1.0</code>.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">r, g, b</span><span class="api-param-type">float</span><span class="api-param-desc">Emissive colour channels in [0, 1].</span></div>
+        <div class="api-param-row"><span class="api-param-name">intensity</span><span class="api-param-type">float</span><span class="api-param-desc">Multiplier. 0.0 = off, 1.0 = normal, &gt;1.0 = boosted. Values above ~6.0 will saturate nearby surfaces white.</span></div>
+      </div>
+      <pre data-label="lua"><code><span class="cm">-- Cyan pulse effect on goal pad glow</span>
+<span class="kw">local</span> p = (math.<span class="fn">sin</span>(<span class="fn">engine.get_time</span>() * <span class="nm">3.0</span>) + <span class="nm">1.0</span>) * <span class="nm">0.5</span>
+<span class="fn">engine.set_object_emissive</span>(glow_id, <span class="nm">0.0</span>, <span class="nm">1.0</span>, <span class="nm">0.9</span>, <span class="nm">2.0</span> + p * <span class="nm">3.0</span>)
+
+<span class="cm">-- Turn emissive off</span>
+<span class="fn">engine.set_object_emissive</span>(glow_id, <span class="nm">0.0</span>, <span class="nm">0.0</span>, <span class="nm">0.0</span>, <span class="nm">0.0</span>)</code></pre>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_object_visible</span>(<span class="param">id, visible</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Shows or hides an object in the ray-traced scene. Hidden objects are collapsed to a degenerate position in the BVH so no rays can hit them. Use for reveal mechanics, goal pads, and collectibles.</p>
+      <div class="callout callout-orange" style="margin-top:0.75rem">
+        <strong>Note:</strong> Physics collision is currently unaffected by visibility — hidden objects still block the player. This is a known engine limitation (tracked).
+      </div>
+    </div>
+  </div>
+
+  <h3 id="object-collision">Collision &amp; Triggers</h3>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_object_aabb</span>(<span class="param">id</span>) <span class="ret">→ min_x, min_y, min_z, max_x, max_y, max_z</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns six floats describing the world-space axis-aligned bounding box of the object. Returns a degenerate (zero-size) AABB if the ID is invalid.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_player_aabb</span>() <span class="ret">→ min_x, min_y, min_z, max_x, max_y, max_z</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns the player's world-space AABB (a capsule approximation centred on camera position). Use with <code>get_object_aabb</code> for custom trigger logic.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.player_overlaps_object</span>(<span class="param">id</span>) <span class="ret">→ bool</span></span>
+      <span class="api-tag api-tag-query">query</span>
+    </div>
+    <div class="api-block-body">
+      <p>Convenience function. Returns <code>true</code> if the player's AABB overlaps the object's AABB this frame. The primary method for trigger zones, checkpoints, and goal detection.</p>
+      <pre data-label="lua"><code><span class="kw">if</span> <span class="fn">engine.player_overlaps_object</span>(goal_id) <span class="kw">then</span>
+    state = <span class="st">"finished"</span>
+    <span class="fn">engine.print_status</span>(<span class="st">"★ LEVEL COMPLETE!"</span>)
+<span class="kw">end</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE QUERIES -->
+<section class="doc-section" id="scene-queries">
+  <h2><span class="accent">09.</span> Scene Queries</h2>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.find_objects_by_prefix</span>(<span class="param">prefix</span>) <span class="ret">→ table of IDs</span></span>
+      <span class="api-tag api-tag-query">query</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns a 1-indexed Lua table of all object IDs whose GLTF node name starts with <code>prefix</code>. Returns an empty table if no objects match. Use for bulk operations on named groups of objects (e.g. all <code>"platform_hazard_"</code> nodes).</p>
+      <pre data-label="lua"><code><span class="kw">local</span> hazards = <span class="fn">engine.find_objects_by_prefix</span>(<span class="st">"platform_hazard_"</span>)
+<span class="fn">engine.print_status</span>(<span class="st">"Found "</span> .. #hazards .. <span class="st">" hazard platforms"</span>)
+
+<span class="kw">for</span> i, id <span class="kw">in</span> <span class="fn">ipairs</span>(hazards) <span class="kw">do</span>
+    <span class="fn">engine.set_object_emissive</span>(id, <span class="nm">1.0</span>, <span class="nm">0.2</span>, <span class="nm">0.0</span>, <span class="nm">2.0</span>)
+<span class="kw">end</span></code></pre>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_all_object_names</span>() <span class="ret">→ table of strings</span></span>
+      <span class="api-tag api-tag-query">query</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns a 1-indexed Lua table of every GLTF node name in the current scene. Useful for debugging scene layout in <code>init()</code>.</p>
+      <pre data-label="lua"><code><span class="kw">local</span> names = <span class="fn">engine.get_all_object_names</span>()
+<span class="fn">engine.print_status</span>(<span class="st">"Scene has "</span> .. #names .. <span class="st">" objects"</span>)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE LOADING -->
+<section class="doc-section" id="scene-loading">
+  <h2><span class="accent">10.</span> Scene Loading</h2>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.load_scene</span>(<span class="param">path</span>)</span>
+      <span class="api-tag api-tag-action">action</span>
+    </div>
+    <div class="api-block-body">
+      <p>Requests a scene transition. The new GLTF is loaded at the <strong>start of the next frame</strong> — the current <code>update()</code> call finishes cleanly first. After the load completes, the engine calls <code>init()</code> again so the script can re-discover objects in the new scene.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">path</span><span class="api-param-type">string</span><span class="api-param-desc">Path to the GLTF file, relative to the working directory (e.g. <code>"scenes/launch_up_level2.gltf"</code>).</span></div>
+      </div>
+      <pre data-label="lua"><code><span class="cm">-- Level progression table</span>
+<span class="kw">local</span> LEVELS = {
+    <span class="st">"scenes/launch_up_tutorial1.gltf"</span>,
+    <span class="st">"scenes/launch_up_level1.gltf"</span>,
+    <span class="st">"scenes/launch_up_level2.gltf"</span>,
+}
+<span class="kw">local</span> current = <span class="nm">1</span>
+
+<span class="cm">-- On level complete:</span>
+current = current + <span class="nm">1</span>
+<span class="kw">if</span> current <= #LEVELS <span class="kw">then</span>
+    <span class="fn">engine.set_var</span>(<span class="st">"game.level"</span>, current)
+    <span class="fn">engine.load_scene</span>(LEVELS[current])
+    <span class="cm">-- init() will be called automatically after load</span>
+<span class="kw">end</span></code></pre>
+      <div class="callout callout-purple" style="margin-top:0.75rem">
+        <strong>Score persists across load_scene.</strong> Game variables written with <code>engine.set_var()</code> before calling <code>load_scene()</code> are available when <code>init()</code> runs in the new scene.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKPOINTS -->
+<section class="doc-section" id="checkpoints">
+  <h2><span class="accent">11.</span> Checkpoints</h2>
+  <p>The engine stores a single world-space respawn position. Update it as the player climbs past tier thresholds.</p>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_checkpoint</span>(<span class="param">x, y, z</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Sets the respawn position. Call when the player reaches a new height tier or crosses a trigger zone.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_checkpoint</span>() <span class="ret">→ x, y, z</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns the current respawn position. Use in the dead-state respawn handler alongside <code>set_camera_position()</code>.</p>
+      <pre data-label="lua"><code><span class="kw">local function</span> <span class="fn">respawn</span>()
+    <span class="kw">local</span> cx, cy, cz = <span class="fn">engine.get_checkpoint</span>()
+    <span class="fn">engine.set_camera_position</span>(cx, cy, cz)
+    <span class="fn">engine.set_vertical_velocity</span>(<span class="nm">0.0</span>)
+    state = <span class="st">"exploring"</span>
+<span class="kw">end</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- VARIABLES -->
+<section class="doc-section" id="variables">
+  <h2><span class="accent">12.</span> Game Variables</h2>
+  <p>A simple float key-value store that lives in C++ and survives hot-reloads, scene transitions, and <code>shutdown()</code> / restart cycles within a session.</p>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_var</span>(<span class="param">key, value</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Stores a float value under an arbitrary string key.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">key</span><span class="api-param-type">string</span><span class="api-param-desc">Arbitrary identifier. Prefix with your game name to avoid collisions.</span></div>
+        <div class="api-param-row"><span class="api-param-name">value</span><span class="api-param-type">float</span><span class="api-param-desc">Value to store. All game state must be encodable as floats (use 0/1 for booleans, integer indices for levels).</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.get_var</span>(<span class="param">key, default</span>) <span class="ret">→ float</span></span>
+      <span class="api-tag api-tag-get">get</span>
+    </div>
+    <div class="api-block-body">
+      <p>Retrieves a stored value. Returns <code>default</code> if the key has never been set.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">key</span><span class="api-param-type">string</span><span class="api-param-desc">The key to look up.</span></div>
+        <div class="api-param-row"><span class="api-param-name">default</span><span class="api-param-type">float</span><span class="api-param-desc">Fallback value if the key doesn't exist yet.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HUD -->
+<section class="doc-section" id="hud">
+  <h2><span class="accent">13.</span> HUD &amp; Status</h2>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.print_status</span>(<span class="param">text</span>)</span>
+      <span class="api-tag api-tag-action">action</span>
+    </div>
+    <div class="api-block-body">
+      <p>Prints a line to the engine's terminal status area. Transient — overwritten on the next call. Use for debug output, event notifications (checkpoint reached, level complete), and tutorial prompts.</p>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <span class="api-sig"><span class="fn-name">engine.set_hud_data</span>(<span class="param">score, height</span>)</span>
+      <span class="api-tag api-tag-set">set</span>
+    </div>
+    <div class="api-block-body">
+      <p>Pushes score and height values to the engine HUD overlay. Call every frame while the game is running to keep the display current.</p>
+      <div class="api-params">
+        <div class="api-param-row"><span class="api-param-name">score</span><span class="api-param-type">float</span><span class="api-param-desc">Current score in points.</span></div>
+        <div class="api-param-row"><span class="api-param-name">height</span><span class="api-param-type">float</span><span class="api-param-desc">Height gained from spawn in metres (not absolute Y). Displayed as progress metric.</span></div>
+      </div>
+      <pre data-label="lua"><code><span class="cm">-- In update_exploring():</span>
+<span class="kw">local</span> _, cy, _ = <span class="fn">engine.get_camera_position</span>()
+<span class="kw">if</span> cy > peak_height <span class="kw">then</span>
+    peak_height = cy
+    score = (peak_height - spawn_y) * <span class="nm">100.0</span>
+<span class="kw">end</span>
+<span class="fn">engine.set_hud_data</span>(score, peak_height - spawn_y)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- KEY CONSTANTS -->
+<section class="doc-section" id="key-constants">
+  <h2><span class="accent">14.</span> Key Constants</h2>
+  <p>These globals are automatically defined in every Lua script. They map to GLFW key codes and are used with <code>engine.get_input()</code>.</p>
+
+  <div class="key-grid">
+    <div class="key-row"><span class="key-name">KEY_SPACE</span><span class="key-val">32</span></div>
+    <div class="key-row"><span class="key-name">KEY_W</span><span class="key-val">87</span></div>
+    <div class="key-row"><span class="key-name">KEY_A</span><span class="key-val">65</span></div>
+    <div class="key-row"><span class="key-name">KEY_S</span><span class="key-val">83</span></div>
+    <div class="key-row"><span class="key-name">KEY_D</span><span class="key-val">68</span></div>
+    <div class="key-row"><span class="key-name">KEY_R</span><span class="key-val">82</span></div>
+    <div class="key-row"><span class="key-name">KEY_N</span><span class="key-val">78</span></div>
+    <div class="key-row"><span class="key-name">KEY_UP</span><span class="key-val">265</span></div>
+    <div class="key-row"><span class="key-name">KEY_DOWN</span><span class="key-val">264</span></div>
+    <div class="key-row"><span class="key-name">KEY_LEFT</span><span class="key-val">263</span></div>
+    <div class="key-row"><span class="key-name">KEY_RIGHT</span><span class="key-val">262</span></div>
+    <div class="key-row"><span class="key-name">KEY_ESCAPE</span><span class="key-val">256</span></div>
+    <div class="key-row"><span class="key-name">KEY_ENTER</span><span class="key-val">257</span></div>
+    <div class="key-row"><span class="key-name">KEY_LEFT_SHIFT</span><span class="key-val">340</span></div>
+  </div>
+
+  <div class="callout callout-cyan">
+    <strong>Need a key not listed?</strong> Any GLFW_KEY_* integer constant can be used directly. The <code>key_down</code> and <code>key_just_pressed</code> tables are indexed by raw GLFW key code, so <code>inp.key_down[70]</code> queries <code>GLFW_KEY_F</code> (70). See the GLFW key reference for the full list.
+  </div>
+</section>
+
+<!-- FULL EXAMPLE -->
+<section class="doc-section" id="example">
+  <h2><span class="accent">15.</span> Minimal Complete Script</h2>
+  <p>A stripped-down example showing all required entry points and the most common patterns.</p>
+
+  <pre data-label="lua"><code><span class="cm">-- scripts/my_game.lua — minimal Ra Engine Lua script</span>
+
+<span class="kw">local</span> DEATH_PLANE = <span class="nm">-5.0</span>
+<span class="kw">local</span> state       = <span class="st">"exploring"</span>
+<span class="kw">local</span> respawn_t   = <span class="nm">0.0</span>
+<span class="kw">local</span> goal_id     = <span class="nm">0</span>
+<span class="kw">local</span> score       = <span class="nm">0.0</span>
+<span class="kw">local</span> spawn_y     = <span class="nm">0.0</span>
+<span class="kw">local</span> peak_y      = <span class="nm">0.0</span>
+
+<span class="kw">function</span> <span class="fn">init</span>()
+    <span class="kw">local</span> _, y, _ = <span class="fn">engine.get_camera_position</span>()
+    spawn_y = y
+    peak_y  = <span class="fn">engine.get_var</span>(<span class="st">"game.peak"</span>, y)
+    score   = <span class="fn">engine.get_var</span>(<span class="st">"game.score"</span>, <span class="nm">0.0</span>)
+
+    goal_id = <span class="fn">engine.find_object</span>(<span class="st">"goal_pad"</span>)
+    <span class="fn">engine.set_checkpoint</span>(<span class="nm">0.0</span>, y, <span class="nm">5.0</span>)
+    <span class="fn">engine.print_status</span>(<span class="st">"Ready — climb to the goal!"</span>)
+<span class="kw">end</span>
+
+<span class="kw">function</span> <span class="fn">update</span>(dt)
+    <span class="kw">if</span> state == <span class="st">"exploring"</span> <span class="kw">then</span>
+        <span class="kw">local</span> _, cy, _ = <span class="fn">engine.get_camera_position</span>()
+
+        <span class="kw">if</span> cy > peak_y <span class="kw">then</span>
+            peak_y = cy
+            score  = (peak_y - spawn_y) * <span class="nm">100.0</span>
+            <span class="fn">engine.set_var</span>(<span class="st">"game.peak"</span>,  peak_y)
+            <span class="fn">engine.set_var</span>(<span class="st">"game.score"</span>, score)
+        <span class="kw">end</span>
+        <span class="fn">engine.set_hud_data</span>(score, peak_y - spawn_y)
+
+        <span class="kw">if</span> goal_id ~= <span class="nm">0</span> <span class="kw">and</span> <span class="fn">engine.player_overlaps_object</span>(goal_id) <span class="kw">then</span>
+            state = <span class="st">"finished"</span>
+            <span class="fn">engine.print_status</span>(<span class="st">"★ LEVEL COMPLETE!  Score: "</span> .. score)
+        <span class="kw">end</span>
+
+        <span class="kw">if</span> cy < DEATH_PLANE <span class="kw">then</span>
+            state     = <span class="st">"dead"</span>
+            respawn_t = <span class="nm">1.5</span>
+        <span class="kw">end</span>
+
+    <span class="kw">elseif</span> state == <span class="st">"dead"</span> <span class="kw">then</span>
+        respawn_t = respawn_t - dt
+        <span class="kw">if</span> respawn_t <= <span class="nm">0.0</span> <span class="kw">then</span>
+            <span class="kw">local</span> cx, cy, cz = <span class="fn">engine.get_checkpoint</span>()
+            <span class="fn">engine.set_camera_position</span>(cx, cy, cz)
+            <span class="fn">engine.set_vertical_velocity</span>(<span class="nm">0.0</span>)
+            state = <span class="st">"exploring"</span>
+        <span class="kw">end</span>
+
+    <span class="kw">elseif</span> state == <span class="st">"finished"</span> <span class="kw">then</span>
+        <span class="kw">local</span> inp = <span class="fn">engine.get_input</span>()
+        <span class="kw">if</span> inp.key_just_pressed[KEY_R] <span class="kw">then</span>
+            score = <span class="nm">0.0</span>; peak_y = spawn_y; state = <span class="st">"exploring"</span>
+            <span class="fn">engine.set_var</span>(<span class="st">"game.score"</span>, <span class="nm">0.0</span>)
+            <span class="fn">engine.set_checkpoint</span>(<span class="nm">0.0</span>, spawn_y, <span class="nm">5.0</span>)
+            <span class="fn">engine.set_camera_position</span>(<span class="nm">0.0</span>, spawn_y, <span class="nm">5.0</span>)
+            <span class="fn">engine.set_vertical_velocity</span>(<span class="nm">0.0</span>)
+        <span class="kw">elseif</span> inp.key_just_pressed[KEY_N] <span class="kw">then</span>
+            <span class="fn">engine.load_scene</span>(<span class="st">"scenes/launch_up_level2.gltf"</span>)
+        <span class="kw">end</span>
+    <span class="kw">end</span>
+<span class="kw">end</span>
+
+<span class="kw">function</span> <span class="fn">shutdown</span>()
+    <span class="fn">engine.set_var</span>(<span class="st">"game.score"</span>, score)
+    <span class="fn">engine.set_var</span>(<span class="st">"game.peak"</span>,  peak_y)
+<span class="kw">end</span>
+
+<span class="kw">function</span> <span class="fn">get_status_line</span>()
+    <span class="kw">if</span> state == <span class="st">"exploring"</span> <span class="kw">then</span>
+        <span class="kw">return</span> <span class="st">"Height: "</span> .. string.<span class="fn">format</span>(<span class="st">"%.1f"</span>, peak_y - spawn_y) .. <span class="st">"m  |  Score: "</span> .. score
+    <span class="kw">elseif</span> state == <span class="st">"dead"</span> <span class="kw">then</span>
+        <span class="kw">return</span> <span class="st">"Respawning..."</span>
+    <span class="kw">else</span>
+        <span class="kw">return</span> <span class="st">"★ COMPLETE — R=restart  N=next level"</span>
+    <span class="kw">end</span>
+<span class="kw">end</span></code></pre>
+</section>
+
+<!-- QUICK REF TABLE -->
+<section class="doc-section" id="quickref">
+  <h2>Quick Reference</h2>
+  <table>
+    <tr><th>Function</th><th>Returns</th><th>Description</th></tr>
+    <tr><td>engine.get_camera_position()</td><td>x, y, z</td><td>Player world position</td></tr>
+    <tr><td>engine.set_camera_position(x,y,z)</td><td>—</td><td>Teleport player</td></tr>
+    <tr><td>engine.get_camera_forward()</td><td>x, y, z</td><td>Normalised look direction</td></tr>
+    <tr><td>engine.get_camera_right()</td><td>x, y, z</td><td>Normalised right vector</td></tr>
+    <tr><td>engine.get_physics_state()</td><td>table</td><td>is_grounded, is_jumping, vertical_velocity</td></tr>
+    <tr><td>engine.set_vertical_velocity(v)</td><td>—</td><td>Jump / cancel falling</td></tr>
+    <tr><td>engine.get_input()</td><td>table</td><td>key_down, key_just_pressed, mouse_delta</td></tr>
+    <tr><td>engine.get_time()</td><td>double</td><td>Wall-clock seconds</td></tr>
+    <tr><td>engine.get_delta_time()</td><td>float</td><td>Frame delta seconds</td></tr>
+    <tr><td>engine.find_object(name)</td><td>id</td><td>ID by GLTF node name, 0 if missing</td></tr>
+    <tr><td>engine.object_exists(id)</td><td>bool</td><td>Validate an object ID</td></tr>
+    <tr><td>engine.get_object_position(id)</td><td>x, y, z</td><td>Object world position</td></tr>
+    <tr><td>engine.set_object_position(id,x,y,z)</td><td>—</td><td>Move object (triggers BLAS rebuild)</td></tr>
+    <tr><td>engine.get_object_rotation(id)</td><td>x, y, z</td><td>Euler degrees YXZ</td></tr>
+    <tr><td>engine.set_object_rotation(id,x,y,z)</td><td>—</td><td>Set rotation</td></tr>
+    <tr><td>engine.get_object_scale(id)</td><td>sx, sy, sz</td><td>Current scale</td></tr>
+    <tr><td>engine.set_object_scale(id, s)</td><td>—</td><td>Uniform scale</td></tr>
+    <tr><td>engine.set_object_scale(id,sx,sy,sz)</td><td>—</td><td>Non-uniform scale</td></tr>
+    <tr><td>engine.set_object_emissive(id,r,g,b,i?)</td><td>—</td><td>Emissive colour + intensity</td></tr>
+    <tr><td>engine.set_object_visible(id, bool)</td><td>—</td><td>Show / hide in BVH</td></tr>
+    <tr><td>engine.get_object_aabb(id)</td><td>6 floats</td><td>World AABB min/max</td></tr>
+    <tr><td>engine.get_player_aabb()</td><td>6 floats</td><td>Player capsule AABB</td></tr>
+    <tr><td>engine.player_overlaps_object(id)</td><td>bool</td><td>Trigger zone test</td></tr>
+    <tr><td>engine.find_objects_by_prefix(pfx)</td><td>table of IDs</td><td>Bulk lookup by name prefix</td></tr>
+    <tr><td>engine.get_all_object_names()</td><td>table of strings</td><td>All scene node names</td></tr>
+    <tr><td>engine.load_scene(path)</td><td>—</td><td>Deferred scene transition</td></tr>
+    <tr><td>engine.set_checkpoint(x,y,z)</td><td>—</td><td>Set respawn position</td></tr>
+    <tr><td>engine.get_checkpoint()</td><td>x, y, z</td><td>Get respawn position</td></tr>
+    <tr><td>engine.set_var(key, value)</td><td>—</td><td>Persist float (survives hot-reload)</td></tr>
+    <tr><td>engine.get_var(key, default)</td><td>float</td><td>Read persisted float</td></tr>
+    <tr><td>engine.print_status(text)</td><td>—</td><td>Terminal status line</td></tr>
+    <tr><td>engine.set_hud_data(score, height)</td><td>—</td><td>Update HUD overlay</td></tr>
+  </table>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <span class="footer-logo">digiflux.one</span>
+  <a href="index.html">← Main Docs</a>
+  <a href="https://digiflux.one">digiflux.one</a>
+  <span>Ra Engine &copy; 2025 Color It Company LLC — Flux Studios ∮</span>
+</footer>
+
+<script>
+const progress = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  progress.style.width = Math.min(pct, 100) + '%';
+});
+
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.doc-section');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const active = document.querySelector('.nav-item[href="#' + e.target.id + '"]');
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+navItems.forEach(item => item.addEventListener('click', () => {
+  navItems.forEach(n => n.classList.remove('active'));
+  item.classList.add('active');
+}));
+</script>
+</body>
+</html>
