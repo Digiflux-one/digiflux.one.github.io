@@ -472,6 +472,7 @@ footer a:hover { color: var(--orange); }
     <a class="nav-item" href="#editor">Scene Editor</a>
     <a class="nav-item sub" href="#hierarchy">Hierarchy View</a>
     <a class="nav-item sub" href="#controls">Controls Reference</a>
+    <a class="nav-item sub" href="#console">Console View</a>
     <a class="nav-item sub" href="#fly">Fly Mode</a>
     <a class="nav-item sub" href="#groups">Object Groups</a>
   </div>
@@ -573,7 +574,7 @@ footer a:hover { color: var(--orange); }
 
   <table>
     <tr><th>Tier</th><th>GPU</th><th>Notes</th></tr>
-    <tr><td>Development</td><td>NVIDIA RTX 2060</td><td>Primary dev target. Single-BLAS architecture tuned for this card.</td></tr>
+    <tr><td>Development / Minimum</td><td>NVIDIA RTX 3060</td><td>Primary dev target and minimum required GPU. Per-object BLAS architecture.</td></tr>
     <tr><td>Supported</td><td>AMD RX 6600</td><td>RDNA2 hardware RT. RADV driver — note primitiveOffset quirks.</td></tr>
     <tr><td>Supported</td><td>Intel Arc A380</td><td>Xe-HPG hardware RT. Validated with Mesa ANV.</td></tr>
   </table>
@@ -609,21 +610,27 @@ footer a:hover { color: var(--orange); }
 
   <h3 id="acceleration">Acceleration Structure</h3>
 
-  <div class="callout callout-orange">
-    <strong>Single BLAS architecture — permanent design decision.</strong> Per-object BLAS triggers <code>VK_ERROR_DEVICE_LOST</code> on RTX 2060 regardless of approach. Ra Engine uses a single BLAS containing all geometry.
-  </div>
+  <p>Ra Engine uses a <strong>per-object BLAS</strong> architecture. Each <code>SceneObject</code> owns a <code>PerObjectBLAS</code> struct. The TLAS holds one instance per BLAS, all with identity transforms.</p>
 
-  <p><strong>Object movement</strong> uses vertex updates, not transform matrices:</p>
-  <ol>
-    <li>Rewrite <code>vertices[firstVertex .. firstVertex+vertexCount]</code> as <code>originalVertices + transform[3].xyz</code></li>
-    <li>Re-upload full vertex buffer via staging</li>
-    <li>Rebuild single BLAS + TLAS</li>
-  </ol>
+  <pre data-label="c++"><code><span class="cm">// DigifluxEngine — per-object BLAS array (parallel to geometry SceneObjects)</span>
+<span class="kw">struct</span> <span class="fn">PerObjectBLAS</span> {
+    VkAccelerationStructureKHR as  = VK_NULL_HANDLE;
+    VkBuffer                   buf = VK_NULL_HANDLE;
+    VkDeviceMemory             mem = VK_NULL_HANDLE;
+};
+std::vector&lt;PerObjectBLAS&gt; objectBLASes;</code></pre>
 
-  <p>An <code>originalVertices</code> snapshot is taken at load time and never modified. This prevents float drift from accumulated delta moves.</p>
+  <p><strong>Vertex positions are world-space baked.</strong> <code>applyAllObjectTransforms()</code> bakes the full transform into vertex data before BLAS build. <code>gl_ObjectToWorldEXT</code> is therefore identity per instance and not referenced in any shader.</p>
 
-  <div class="callout callout-danger">
-    <strong>Never use <code>gl_ObjectToWorldEXT</code> in any shader.</strong> It causes device lost on RTX 2060. All transform data must be encoded in vertex positions directly.
+  <p><strong>Index addressing in closesthit:</strong> <code>gl_InstanceCustomIndexEXT</code> stores <code>firstIndex</code> for each TLAS instance, mapping the local <code>gl_PrimitiveID</code> back to the correct slot in the global index buffer:</p>
+
+  <pre data-label="glsl"><code><span class="kw">uint</span> baseIndex = gl_InstanceCustomIndexEXT;
+<span class="kw">uint</span> i0 = indices[baseIndex + <span class="nm">3</span> * gl_PrimitiveID + <span class="nm">0</span>];
+<span class="kw">uint</span> i1 = indices[baseIndex + <span class="nm">3</span> * gl_PrimitiveID + <span class="nm">1</span>];
+<span class="kw">uint</span> i2 = indices[baseIndex + <span class="nm">3</span> * gl_PrimitiveID + <span class="nm">2</span>];</code></pre>
+
+  <div class="callout callout-cyan">
+    <strong>BLAS rebuild functions:</strong> <code>buildObjectBLAS(idx, obj)</code> — single object; <code>buildAllBLASes()</code> — full rebuild; <code>buildTLAS()</code> — rebuild TLAS after any BLAS change; <code>destroyAllBLASes()</code> — cleanup before full rebuild or shutdown. Register each <code>SceneObject</code> before calling <code>buildAllBLASes()</code>.
   </div>
 </section>
 
@@ -656,10 +663,12 @@ footer a:hover { color: var(--orange); }
     <div class="ubo-field"><span class="ubo-field-name">hudEnabled</span><span class="ubo-field-type">uint</span></div>
     <div class="ubo-field"><span class="ubo-field-name">hudScore</span><span class="ubo-field-type">float</span></div>
     <div class="ubo-field"><span class="ubo-field-name">hudHeight</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">reachIndicatorEnabled</span><span class="ubo-field-type">int</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">reachIndicatorNorm</span><span class="ubo-field-type">float</span></div>
   </div>
 
   <div class="callout callout-cyan">
-    Any mismatch in field order between shaders and the C++ <code>CameraUBO</code> struct will cause silent data corruption — wrong settings reaching the GPU with no validation error.
+    Any mismatch in field order between shaders and the C++ <code>CameraUBO</code> struct will cause silent data corruption — wrong settings reaching the GPU with no validation error. Total: <strong>24 fields</strong>. <code>reachIndicatorEnabled</code> and <code>reachIndicatorNorm</code> are declared in <code>closesthit.rchit</code> for layout sync only — they are only consumed in <code>raygen.rgen</code>.
   </div>
 </section>
 
@@ -753,7 +762,7 @@ footer a:hover { color: var(--orange); }
   <h3>F-Key Menu System</h3>
   <table>
     <tr><th>Key</th><th>Menu</th></tr>
-    <tr><td><span class="keybind">F1</span></td><td>Close current menu / help</td></tr>
+    <tr><td><span class="keybind">F1</span></td><td>Console View — scrollable stdout/stderr capture panel</td></tr>
     <tr><td><span class="keybind">F2</span></td><td>Video settings (ACES, Gamma, GI samples, fog, reflections...)</td></tr>
     <tr><td><span class="keybind">F3</span></td><td>Scene hierarchy view</td></tr>
     <tr><td><span class="keybind">F4</span></td><td>Fly mode toggle</td></tr>
@@ -785,8 +794,11 @@ footer a:hover { color: var(--orange); }
     <tr><td><span class="keybind">KP+</span> (hold)</td><td>Add Object submenu: <span class="keybind">C</span>=cube (1×1×1, spawns 2m ahead)</td></tr>
     <tr><td><span class="keybind">KP*</span> (hold)</td><td>Add Light submenu: <span class="keybind">S</span>=spot, <span class="keybind">A</span>=point</td></tr>
     <tr><td><span class="keybind">G</span></td><td>Snap selected object to ground (Möller–Trumbore raycast from bottom face)</td></tr>
-    <tr><td><span class="keybind">~</span></td><td>Toggle grab mode (move selected object)</td></tr>
-    <tr><td><span class="keybind">←</span> <span class="keybind">→</span></td><td>Group operations (hierarchy left/right)</td></tr>
+    <tr><td><span class="keybind">~</span></td><td>Toggle grab mode (move selected object or whole group)</td></tr>
+    <tr><td><span class="keybind">Alt</span>+<span class="keybind">G</span></td><td>Grab entire group — moves all members together</td></tr>
+    <tr><td><span class="keybind">Alt</span>+<span class="keybind">D</span></td><td>Delete selected object and rebuild GPU buffers</td></tr>
+    <tr><td><span class="keybind">Enter</span></td><td>Select group header — subsequent edits apply to all group members</td></tr>
+    <tr><td><span class="keybind">←</span> <span class="keybind">→</span></td><td>Expand / collapse group in hierarchy</td></tr>
     <tr><td><span class="keybind">ESC</span></td><td>Cancel current submenu / deselect</td></tr>
   </table>
 
@@ -806,8 +818,25 @@ footer a:hover { color: var(--orange); }
     Roll is stored in a <code>float roll</code> member. <code>updateCamera()</code> applies <code>glm::rotate</code> around <code>cameraFront</code>. The view matrix in <code>rtx_pipeline.cpp</code> must use <code>cameraUp</code> — not a hardcoded world up — or roll will not reach the GPU.
   </div>
 
+  <h3 id="console">Console View (F1)</h3>
+
+  <p>F1 opens a full-screen scrollable terminal panel that captures all <code>stdout</code> and <code>stderr</code> into a 500-line ring buffer. Output is ANSI-stripped for storage and re-coloured by line type (normal / success / warning / error). The real terminal still receives the original coloured output simultaneously via a tee streambuf.</p>
+
+  <table>
+    <tr><th>Key</th><th>Action</th></tr>
+    <tr><td><span class="keybind">↑</span> / <span class="keybind">↓</span></td><td>Scroll one line</td></tr>
+    <tr><td><span class="keybind">PgUp</span> / <span class="keybind">PgDn</span></td><td>Scroll half a page</td></tr>
+    <tr><td><span class="keybind">Home</span> / <span class="keybind">End</span></td><td>Jump to top / bottom of buffer</td></tr>
+    <tr><td><span class="keybind">F1</span></td><td>Close console</td></tr>
+  </table>
+
+  <div class="callout callout-purple">
+    <code>ConsoleView::render()</code> writes via <code>origCout_</code> (the pre-redirect streambuf), never through <code>std::cout</code>, eliminating any risk of recursive capture during rendering.
+  </div>
+
   <h3 id="groups">Object Groups</h3>
-  <p>Objects can be assigned to named groups via the <code>ra_group</code> node extra or via the editor. The <code>groupName</code> field is preserved through save/reload. Grab mode (<span class="keybind">~</span>) moves all objects in the selected group together.</p>
+
+  <p>Objects are assigned to named groups via the <code>ra_group</code> node extra or via the editor. The current scene name is displayed at the bottom-left border of the hierarchy panel — it turns red when there are unsaved changes. Press <span class="keybind">Enter</span> on a group header to select the whole group; subsequent property edits apply to all members. <span class="keybind">Alt</span>+<span class="keybind">G</span> grabs the whole group for movement.</p>
 
   <div class="callout callout-cyan">
     <strong>GLFW Character Input Note:</strong> <code>glfwSetCharCallback</code> does not fire when <code>GLFW_CURSOR_DISABLED</code> is active. All text input uses <code>keyCallback</code>-based <code>keyToChar()</code> translation instead.
@@ -823,12 +852,13 @@ footer a:hover { color: var(--orange); }
     <tr><th>Flag</th><th>Effect</th></tr>
     <tr><td>--skip-compile</td><td>Skip C++ recompile, use existing binary</td></tr>
     <tr><td>--no-mango</td><td>Disable MangoHUD overlay (always required)</td></tr>
-    <tr><td>--play</td><td>Launch in play mode (cursor locked, game input active)</td></tr>
+    <tr><td>--play</td><td>Interactive scene picker. Pre-selects last used scene — press Enter to reuse. <code>scenes/_archive/</code> excluded from list.</td></tr>
+    <tr><td>--fullscreen</td><td>Session-only fullscreen. Temporarily sets <code>start_fullscreen = true</code> in <code>ra_engine.conf</code>, restores original value on exit.</td></tr>
     <tr><td>--clean</td><td>Full recompile from scratch (calls make clean)</td></tr>
     <tr><td>--validate</td><td>Enable Vulkan validation layers</td></tr>
   </table>
 
-  <p>Scene file path is the final positional argument. The script passes it through to the engine — no scene is hardcoded in <code>go.sh</code>.</p>
+  <p>Scene file path is the final positional argument — writing it to disk updates <code>.last_scene</code> for the next session. Without a positional argument, <code>go.sh</code> loads the scene from <code>.last_scene</code>, falling back to <code>material_showcase_v2.gltf</code> on first run.</p>
 
   <h3 id="compile">Incremental Builds</h3>
   <p>The Makefile uses <code>-MMD -MP</code> for dependency tracking. Without <code>--clean</code>, only changed translation units recompile. Shader compilation is always a separate step via <code>compile_shaders.sh</code> — the build system does not auto-detect shader changes.</p>
@@ -866,8 +896,8 @@ footer a:hover { color: var(--orange); }
 
   <table>
     <tr><th>Pitfall</th><th>Symptom</th><th>Fix</th></tr>
-    <tr><td>gl_ObjectToWorldEXT in shaders</td><td>VK_ERROR_DEVICE_LOST immediately</td><td>Remove. Encode transforms in vertex positions.</td></tr>
-    <tr><td>Per-object BLAS</td><td>VK_ERROR_DEVICE_LOST on RTX 2060</td><td>Single BLAS only. Always.</td></tr>
+    <tr><td>gl_ObjectToWorldEXT in shaders</td><td>Not needed — would be identity</td><td>Vertex positions are world-space baked. Do not use; not referenced in any active shader.</td></tr>
+    <tr><td>SceneObject registered after buildAllBLASes()</td><td>Object missing from TLAS</td><td>Register every SceneObject before calling buildAllBLASes().</td></tr>
     <tr><td>CameraUBO field mismatch</td><td>Silent wrong values in shaders</td><td>Keep struct field order identical in all .rgen/.rchit and C++ header.</td></tr>
     <tr><td>Light node in node.extensions map</td><td>Lights not loading</td><td>Use node.light integer field in TinyGLTF. Raw JSON uses KHR_lights_punctual.light.</td></tr>
     <tr><td>GLFW char callback with locked cursor</td><td>Text input silently drops</td><td>Use keyToChar() in keyCallback instead.</td></tr>
