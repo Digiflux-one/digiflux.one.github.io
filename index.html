@@ -407,6 +407,35 @@
   .faq-q { font-size: 15px; font-weight: 500; margin-bottom: 0.5rem; }
   .faq-a { font-size: 14px; color: var(--text-muted); line-height: 1.75; font-weight: 300; }
 
+  /* ── DOCS ── */
+  .docs-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1px; border: 0.5px solid var(--border-subtle);
+    border-radius: 4px; overflow: hidden; margin-top: 3rem;
+  }
+  .docs-card {
+    background: var(--bg2); padding: 2rem 1.75rem;
+    text-decoration: none; display: flex; flex-direction: column; gap: 0.5rem;
+    transition: background 0.2s; position: relative;
+  }
+  .docs-card:hover { background: var(--bg3); }
+  .docs-icon { font-size: 20px; color: var(--magenta); }
+  .docs-title { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: 0.02em; }
+  .docs-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; font-weight: 300; flex: 1; }
+  .docs-arrow {
+    font-size: 14px; color: var(--text-dim);
+    margin-top: 0.75rem; transition: color 0.2s; align-self: flex-start;
+  }
+  .docs-card:hover .docs-arrow { color: var(--magenta); }
+  .docs-cta {
+    display: inline-block; margin-top: 2rem;
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--text-muted); letter-spacing: 0.06em;
+    text-decoration: none; border-bottom: 0.5px solid var(--border-subtle);
+    padding-bottom: 2px; transition: color 0.2s, border-color 0.2s;
+  }
+  .docs-cta:hover { color: var(--text); border-color: var(--text-muted); }
+
   /* ── CTA ── */
   .cta-band {
     text-align: center; padding: 100px 2.5rem;
@@ -769,6 +798,48 @@
 </section>
 
 <!-- CTA -->
+<hr class="divider">
+
+<!-- DOCS -->
+<section id="docs">
+  <div class="section-tag">Documentation</div>
+  <h2 class="section-title">Everything you need<br>to build</h2>
+  <p class="section-lead">
+    Full documentation for Digiflux.one and Ra Engine — pipeline architecture, GLTF scene format, Lua scripting, shader reference, and tooling guides.
+  </p>
+
+  <div class="docs-grid">
+    <a href="https://digiflux.one/docs/" class="docs-card">
+      <span class="docs-icon">◈</span>
+      <div class="docs-title">Getting Started</div>
+      <div class="docs-desc">Install Ra Engine, load your first scene, and run with hardware RTX in minutes.</div>
+      <span class="docs-arrow">→</span>
+    </a>
+    <a href="https://digiflux.one/docs/" class="docs-card">
+      <span class="docs-icon">◱</span>
+      <div class="docs-title">Scene Format</div>
+      <div class="docs-desc">GLTF 2.0 pipeline, Ra-native extensions, material index rules, and extras node reference.</div>
+      <span class="docs-arrow">→</span>
+    </a>
+    <a href="https://digiflux.one/docs/" class="docs-card">
+      <span class="docs-icon">⬡</span>
+      <div class="docs-title">Lua Scripting</div>
+      <div class="docs-desc">Hot-reloadable game logic, state machines, the full Lua API surface, and Ra Engine bindings.</div>
+      <span class="docs-arrow">→</span>
+    </a>
+    <a href="https://digiflux.one/docs/" class="docs-card">
+      <span class="docs-icon">⊛</span>
+      <div class="docs-title">Shader Reference</div>
+      <div class="docs-desc">Raygen, closesthit, miss — shader architecture, CameraUBO field order, and extension constraints.</div>
+      <span class="docs-arrow">→</span>
+    </a>
+  </div>
+
+  <a href="https://digiflux.one/docs/" class="docs-cta">Browse all documentation →</a>
+</section>
+
+<hr class="divider">
+
 <div class="cta-band">
   <div class="section-tag" style="text-align:center">Get started today</div>
   <h2 class="section-title">Build something<br>that looks <span style="color:var(--magenta)">real</span></h2>
