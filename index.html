@@ -477,8 +477,28 @@
 
   @media (max-width: 768px) {
     html, body { width: 100%; overflow-x: hidden; }
-    nav { padding: 0 1.25rem; }
-    .nav-links { display: none; }
+    nav { padding: 1.5rem 1.25rem; position: relative; }
+    .hamburger { display: flex; }
+    .nav-links {
+      position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; gap: 0; background: var(--bg);
+      border-bottom: 0.5px solid var(--border-subtle);
+      max-height: 0; overflow: hidden; transition: max-height 0.3s;
+    }
+    .nav-links.active {
+      max-height: 400px;
+    }
+    .nav-links a {
+      padding: 1rem 1.25rem; border-bottom: 0.5px solid var(--border-subtle);
+      font-size: 14px;
+    }
+    .nav-links a:last-child {
+      border-bottom: none;
+    }
+    .nav-cta {
+      width: 100%; text-align: center; padding: 1.25rem;
+      border: none; background: var(--bg2);
+    }
     section, .ra-section { padding: 60px 1.25rem; max-width: 100%; width: 100%; }
     .hero { padding: 100px 1.25rem 60px; }
     .hero-desc { max-width: 100%; }
