@@ -3,992 +3,1290 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digiflux.one — Hardware RTX Graphics Pipeline</title>
+<title>Ra Engine — Documentation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0908;
+  --bg2: #110f0d;
+  --bg3: #1a1714;
+  --surface: #1e1b18;
+  --surface2: #252118;
+  --border: rgba(255,160,60,0.12);
+  --border2: rgba(255,160,60,0.22);
+  --orange: #ff7c2a;
+  --orange-dim: rgba(255,124,42,0.15);
+  --cyan: #2afff4;
+  --cyan-dim: rgba(42,255,244,0.12);
+  --purple: #a078ff;
+  --purple-dim: rgba(160,120,255,0.12);
+  --text: #f0ece6;
+  --text2: #a09888;
+  --text3: #6a6055;
+  --magenta: #ff2d8f;
+  --sidebar-w: 260px;
+  --header-h: 56px;
+}
 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+a { color: var(--cyan); text-decoration: none; }
+a:hover { color: var(--orange); }
+
+/* ── HEADER ── */
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--header-h);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 2rem;
+  gap: 1.5rem;
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+}
+
+.logo-mark {
+  width: 28px; height: 28px;
+  background: var(--orange);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: #000;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.logo-sub {
+  font-size: 11px; color: var(--text3); font-weight: 400;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  border-left: 1px solid var(--border2); padding-left: 1rem; margin-left: 0.5rem;
+}
+a.logo-sub { text-decoration: none; }
+a.logo-sub:hover { color: var(--orange); }
+
+.header-right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 1rem;
+}
+
+.badge {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--border2);
+  color: var(--text3); border-radius: 3px;
+}
+
+.badge-orange { border-color: var(--orange); color: var(--orange); }
+.badge-cyan { border-color: var(--cyan); color: var(--cyan); }
+
+/* ── LAYOUT ── */
+.layout {
+  display: flex;
+  padding-top: var(--header-h);
+  min-height: 100vh;
+}
+
+/* ── SIDEBAR ── */
+nav {
+  width: var(--sidebar-w);
+  position: fixed;
+  top: var(--header-h); bottom: 0; left: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 1.5rem 0;
+}
+
+nav::-webkit-scrollbar { width: 4px; }
+nav::-webkit-scrollbar-track { background: transparent; }
+nav::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.nav-section {
+  padding: 0 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.nav-label {
+  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 0.5rem; padding: 0 0.25rem;
+}
+
+.nav-item {
+  display: block;
+  padding: 5px 8px;
+  border-radius: 4px;
+  color: var(--text2);
+  font-size: 12.5px;
+  transition: all 0.15s;
+  margin-bottom: 1px;
+  border-left: 2px solid transparent;
+}
+
+.nav-item:hover {
+  color: var(--text);
+  background: var(--surface);
+  border-left-color: var(--border2);
+}
+
+.nav-item.active {
+  color: var(--orange);
+  background: var(--orange-dim);
+  border-left-color: var(--orange);
+}
+
+.nav-item.sub {
+  padding-left: 20px;
+  font-size: 11.5px;
+  color: var(--text3);
+}
+
+.nav-item.sub:hover { color: var(--text2); }
+
+/* ── MAIN CONTENT ── */
+main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  max-width: 860px;
+  padding: 3rem 3.5rem;
+}
+
+/* ── SECTIONS ── */
+.doc-section {
+  margin-bottom: 4rem;
+  scroll-margin-top: calc(var(--header-h) + 2rem);
+}
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px; font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+h1 span { color: var(--orange); }
+
+.hero-sub {
+  font-size: 14px; color: var(--text2); max-width: 540px;
+  margin-bottom: 2rem; line-height: 1.6;
+}
+
+h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px; font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+h2 .accent { color: var(--orange); }
+
+h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 600;
+  color: var(--cyan);
+  margin: 1.75rem 0 0.6rem;
+  letter-spacing: 0.02em;
+}
+
+p { color: var(--text2); margin-bottom: 0.9rem; line-height: 1.75; }
+p strong { color: var(--text); font-weight: 500; }
+
+ul, ol { color: var(--text2); padding-left: 1.5rem; margin-bottom: 0.9rem; }
+li { margin-bottom: 0.3rem; line-height: 1.7; }
+li strong { color: var(--text); }
+
+/* ── CODE ── */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--cyan);
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+pre {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  margin: 1rem 0 1.5rem;
+  position: relative;
+}
+
+pre::before {
+  content: attr(data-label);
+  position: absolute; top: 10px; right: 12px;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text3);
+}
+
+pre code {
+  background: none; border: none; padding: 0;
+  color: var(--text2); font-size: 12.5px; line-height: 1.9;
+}
+
+.kw { color: var(--orange); }
+.cm { color: var(--text3); font-style: italic; }
+.st { color: var(--cyan); }
+.fn { color: var(--purple); }
+.nm { color: #ff9f6e; }
+
+/* ── CALLOUT BOXES ── */
+.callout {
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  border-left: 3px solid;
+  font-size: 13px;
+}
+
+.callout-orange {
+  background: var(--orange-dim);
+  border-color: var(--orange);
+  color: var(--text2);
+}
+
+.callout-cyan {
+  background: var(--cyan-dim);
+  border-color: var(--cyan);
+  color: var(--text2);
+}
+
+.callout-purple {
+  background: var(--purple-dim);
+  border-color: var(--purple);
+  color: var(--text2);
+}
+
+.callout-danger {
+  background: rgba(255,60,60,0.1);
+  border-color: #ff4444;
+  color: var(--text2);
+}
+
+.callout strong { color: var(--text); }
+
+/* ── TABLES ── */
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 1rem 0 1.5rem; font-size: 12.5px;
+}
+
+th {
+  text-align: left; padding: 8px 12px;
+  background: var(--surface);
+  color: var(--text3); font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  border-bottom: 1px solid var(--border2);
+}
+
+td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  vertical-align: top;
+}
+
+td:first-child { color: var(--orange); font-family: 'JetBrains Mono', monospace; }
+tr:hover td { background: var(--surface); }
+
+/* ── GRID CARDS ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem; margin: 1.25rem 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  transition: border-color 0.2s;
+}
+
+.card:hover { border-color: var(--border2); }
+
+.card-icon {
+  font-size: 20px; margin-bottom: 0.75rem;
+}
+
+.card h4 {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text); margin-bottom: 0.4rem;
+}
+
+.card p { font-size: 12px; color: var(--text3); margin: 0; }
+
+/* ── UBO FIELD LIST ── */
+.ubo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2px; margin: 1rem 0;
+  font-size: 11.5px;
+}
+
+.ubo-field {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.ubo-field-name { color: var(--cyan); font-family: 'JetBrains Mono', monospace; }
+.ubo-field-type { color: var(--text3); font-size: 10px; }
+
+/* ── KEY BINDING TABLE ── */
+.keybind {
+  display: inline-block;
+  font-size: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-bottom: 2px solid var(--border2);
+  border-radius: 3px;
+  padding: 2px 7px;
+  color: var(--text); font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+}
+
+/* ── DIVIDER ── */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+
+/* ── PILL TAGS ── */
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0.75rem 0; }
+.tag {
+  font-size: 10px; letter-spacing: 0.06em;
+  padding: 3px 8px; border-radius: 3px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text3);
+}
+.tag-orange { border-color: rgba(255,124,42,0.4); color: var(--orange); }
+.tag-cyan { border-color: rgba(42,255,244,0.3); color: var(--cyan); }
+.tag-purple { border-color: rgba(160,120,255,0.3); color: var(--purple); }
+
+/* ── FOOTER ── */
+footer {
+  margin-left: var(--sidebar-w);
+  padding: 2rem 3.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text3);
+  display: flex; gap: 2rem; align-items: center;
+}
+
+footer a { color: var(--text3); }
+footer a:hover { color: var(--orange); }
+
+.footer-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 13px;
+  color: var(--text2); margin-right: auto;
+}
+
+/* ── SCROLL INDICATOR ── */
+.progress-bar {
+  position: fixed; top: var(--header-h); left: 0; right: 0;
+  height: 2px; background: var(--border);
+  z-index: 99;
+}
+.progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--orange), var(--cyan));
+  transition: width 0.1s;
+}
+
+/* ── VERSION TAG ── */
+.version-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
   :root {
-    --magenta: #E8008C;
-    --magenta-dim: #8C0055;
-    --cyan: #00E5D4;
-    --orange: #FF6B35;
-    --bg: #07070D;
-    --bg2: #0E0E18;
-    --bg3: #141420;
-    --text: #F0EEF8;
-    --text-muted: #8884AA;
-    --text-dim: #4A4870;
-    --border: rgba(232,0,140,0.15);
-    --border-subtle: rgba(255,255,255,0.06);
+    --sidebar-w: 0px;
   }
 
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-weight: 400;
-    line-height: 1.6;
-    overflow-x: hidden;
+  header {
+    padding: 0 1rem;
+    gap: 0.75rem;
   }
 
-  /* ── NAV ── */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 2.5rem; height: 60px;
-    background: rgba(7,7,13,0.88);
-    backdrop-filter: blur(12px);
-    border-bottom: 0.5px solid var(--border-subtle);
+  .logo {
+    font-size: 16px;
+    gap: 8px;
   }
-  .nav-logo {
-    font-family: 'DM Mono', monospace;
-    font-size: 16px; letter-spacing: 0.06em;
-    color: var(--text);
-    display: flex; align-items: center; gap: 10px;
+
+  .logo-mark {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
   }
-  .nav-logo .dot { color: var(--magenta); }
-  .nav-logo .sub {
-    font-size: 11px; color: var(--text-dim);
-    border-left: 0.5px solid var(--border-subtle);
-    padding-left: 10px; letter-spacing: 0.08em;
+
+  .logo-sub {
+    display: none;
   }
-  .nav-links { display: flex; gap: 2rem; align-items: center; }
-  .nav-links a {
-    font-size: 18px; font-weight: 500; color: var(--text-muted);
-    text-decoration: none; letter-spacing: 0.04em; transition: color 0.2s;
+
+  .header-right {
+    gap: 0.5rem;
   }
-  .nav-links a:hover { color: var(--text); }
-  .nav-cta {
-    font-family: 'DM Mono', monospace; font-size: 12px;
-    background: var(--magenta); color: #fff;
-    padding: 8px 20px; border-radius: 2px;
-    text-decoration: none; font-weight: 500; letter-spacing: 0.05em;
-    transition: opacity 0.2s;
+
+  .badge {
+    font-size: 8px;
+    padding: 2px 6px;
   }
-  .nav-cta:hover { opacity: 0.85; color: #fff; }
-  /* ── HAMBURGER ── */
+
   .hamburger {
-    display: none; flex-direction: column; gap: 5px;
-    background: none; border: none; cursor: pointer; padding: 0;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 4px;
+    background: none;
+    border: none;
+    padding: 0;
   }
+
   .hamburger span {
-    width: 24px; height: 2px; background: var(--text-muted);
-    transition: all 0.3s; border-radius: 2px;
+    width: 24px;
+    height: 2px;
+    background: var(--orange);
+    border-radius: 1px;
+    transition: all 0.3s;
   }
+
   .hamburger.active span:nth-child(1) {
     transform: rotate(45deg) translate(8px, 8px);
   }
+
   .hamburger.active span:nth-child(2) {
     opacity: 0;
   }
+
   .hamburger.active span:nth-child(3) {
     transform: rotate(-45deg) translate(7px, -7px);
   }
 
-  /* ── HERO ── */
-  .hero {
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: flex-start;
-    padding: 120px 2.5rem 80px;
-    position: relative; overflow: hidden;
-  }
-  .hero-bg {
-    position: absolute; inset: 0; z-index: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 80% 40%, rgba(232,0,140,0.13) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 60% at 15% 65%, rgba(0,229,212,0.07) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 40% at 50% 20%, rgba(255,107,53,0.06) 0%, transparent 60%);
-  }
-  .hero-grid {
-    position: absolute; inset: 0; z-index: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
-    background-size: 60px 60px;
-    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
-  }
-
-  .hero-eyebrow {
-    font-family: 'DM Mono', monospace; font-size: 12px;
-    color: var(--magenta); letter-spacing: 0.2em; text-transform: uppercase;
-    margin-bottom: 1.2rem; position: relative; z-index: 1;
-    display: flex; align-items: center; gap: 10px;
-    animation: fadeUp 0.6s ease both;
-  }
-  .hero-eyebrow::before {
-    content: ''; display: inline-block;
-    width: 24px; height: 1px; background: var(--magenta);
-  }
-
-  .hero-wordmark {
-    position: relative; z-index: 1;
-    margin-bottom: 0.3rem;
-    animation: fadeUp 0.7s 0.1s ease both;
-  }
-  .hero-wordmark .digiflux {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(72px, 10vw, 146px);
-    line-height: 0.9; letter-spacing: 0.02em;
-    color: var(--text);
-    display: block;
-  }
-  .hero-wordmark .dot-one {
-    font-family: 'DM Mono', monospace;
-    font-size: clamp(20px, 3vw, 36px);
-    color: var(--magenta);
-    letter-spacing: 0.04em;
-    display: block;
-    margin-top: 0.2rem;
-  }
-
-  .hero-sub {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(22px, 3vw, 40px);
-    letter-spacing: 0.08em; color: var(--text-muted);
-    position: relative; z-index: 1; margin-bottom: 2rem;
-    animation: fadeUp 0.7s 0.2s ease both;
-  }
-  .hero-desc {
-    font-size: 18px; color: var(--text-muted);
-    max-width: 560px; line-height: 1.75;
-    position: relative; z-index: 1; margin-bottom: 2.5rem; font-weight: 300;
-    animation: fadeUp 0.7s 0.3s ease both;
-  }
-  .hero-actions {
-    display: flex; gap: 1rem; align-items: center;
-    position: relative; z-index: 1;
-    animation: fadeUp 0.7s 0.4s ease both;
-  }
-  .btn-primary {
-    font-family: 'DM Mono', monospace; font-size: 14px;
-    background: var(--magenta); color: #fff;
-    padding: 14px 32px; border-radius: 2px; text-decoration: none;
-    font-weight: 500; letter-spacing: 0.08em;
-    transition: opacity 0.2s, transform 0.15s; display: inline-block;
-  }
-  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
-  .btn-ghost {
-    font-family: 'DM Mono', monospace; font-size: 14px;
-    color: var(--text-muted); padding: 14px 28px;
-    border: 0.5px solid rgba(255,255,255,0.15); border-radius: 2px;
-    text-decoration: none; letter-spacing: 0.06em;
-    transition: color 0.2s, border-color 0.2s;
-  }
-  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.35); }
-
-  .hero-badges {
-    position: relative; z-index: 1; margin-top: 3rem;
-    display: flex; gap: 1rem; flex-wrap: wrap;
-    animation: fadeUp 0.7s 0.5s ease both;
-  }
-  .badge {
-    font-family: 'DM Mono', monospace; font-size: 13px;
-    letter-spacing: 0.1em; color: var(--text-dim);
-    border: 0.5px solid var(--border-subtle); padding: 5px 12px;
-    border-radius: 2px; text-transform: uppercase;
-  }
-  .badge.lit { color: var(--cyan); border-color: rgba(0,229,212,0.2); }
-
-  /* ── PRODUCT SPLIT BANNER ── */
-  .split-banner {
-    display: grid; grid-template-columns: 1fr 1fr;
-    border-top: 0.5px solid var(--border-subtle);
-    border-bottom: 0.5px solid var(--border-subtle);
-  }
-  .split-panel {
-    padding: 3.5rem 3rem;
-    display: flex; flex-direction: column; gap: 0.75rem;
-    border-right: 0.5px solid var(--border-subtle);
-    transition: background 0.2s;
-  }
-  .split-panel:last-child { border-right: none; }
-  .split-panel:hover { background: var(--bg2); }
-  .split-tag {
-    font-family: 'DM Mono', monospace; font-size: 13px;
-    letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim);
-  }
-  .split-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px; letter-spacing: 0.04em; color: var(--text); line-height: 1;
-  }
-  .split-name .accent { color: var(--magenta); }
-  .split-desc {
-    font-size: 17px; color: var(--text-muted); font-weight: 300;
-    line-height: 1.7; max-width: 340px;
-  }
-  .split-pill {
-    font-family: 'DM Mono', monospace; font-size: 12px;
-    color: var(--magenta); border: 0.5px solid var(--border);
-    padding: 4px 10px; border-radius: 2px;
-    display: inline-block; letter-spacing: 0.08em;
-    align-self: flex-start; margin-top: 0.25rem;
-  }
-
-  /* ── SECTION COMMON ── */
-  section { padding: 100px 2.5rem; max-width: 1100px; margin: 0 auto; }
-  .section-tag {
-    font-family: 'DM Mono', monospace; font-size: 16px;
-    color: var(--magenta); letter-spacing: 0.18em;
-    text-transform: uppercase; margin-bottom: 1rem;
-  }
-  .section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(40px, 5vw, 64px);
-    letter-spacing: 0.03em; line-height: 1; margin-bottom: 1.2rem;
-  }
-  .section-lead {
-    font-size: 18px; color: var(--text-muted);
-    max-width: 600px; line-height: 1.8; font-weight: 300;
-  }
-  hr.divider { border: none; border-top: 0.5px solid var(--border-subtle); margin: 0; }
-
-  /* ── PIPELINE FEATURES ── */
-  .features-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1px; border: 0.5px solid var(--border-subtle);
-    border-radius: 4px; overflow: hidden; margin-top: 3.5rem;
-  }
-  .feature-card {
-    background: var(--bg2); padding: 1rem 1.75rem; transition: background 0.2s;
-  }
-  .feature-card:hover { background: var(--bg3); }
-  .feature-icon {
-    font-family: 'DM Mono', monospace; font-size: 22px;
-    color: var(--magenta); display: block;
-  }
-  .feature-title { font-size: 18px; font-weight: 600; letter-spacing: 0.02em; margin-bottom: 0.5rem; }
-  .feature-desc { font-size: 16px; color: var(--text-muted); line-height: 1.7; font-weight: 300; }
-
-  /* ── RA ENGINE SECTION ── */
-  .ra-section-wrap {
+  nav {
+    position: fixed;
+    left: 0;
+    top: var(--header-h);
+    width: 100%;
+    max-height: calc(100vh - var(--header-h));
     background: var(--bg2);
-    border-top: 0.5px solid var(--border-subtle);
-    border-bottom: 0.5px solid var(--border-subtle);
-  }
-  .ra-section { padding: 100px 2.5rem; max-width: 1100px; margin: 0 auto; }
-  .ra-header {
-    display: flex; align-items: flex-end;
-    justify-content: space-between; gap: 2rem;
-    margin-bottom: 3.5rem; flex-wrap: wrap;
-  }
-  .ra-title-block .section-tag { margin-bottom: 0.75rem; }
-  .ra-title-block .section-title { margin-bottom: 0.5rem; }
-  .ra-title-block .section-lead { max-width: 480px; }
-  .ra-steam-badge {
-    font-family: 'DM Mono', monospace; font-size: 11px;
-    border: 0.5px solid rgba(0,229,212,0.25); color: var(--cyan);
-    padding: 10px 18px; border-radius: 2px; letter-spacing: 0.08em;
-    text-decoration: none; white-space: nowrap; transition: background 0.2s;
-    align-self: flex-start;
-  }
-  .ra-steam-badge:hover { background: rgba(0,229,212,0.06); }
-
-  /* ── PRICING ── */
-  .pricing-layout {
-    display: grid; grid-template-columns: 320px 1fr;
-    gap: 4rem; align-items: start;
-  }
-  .price-card {
-    background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: 4px; padding: 2.5rem; position: sticky; top: 80px;
-  }
-  .price-amount {
-    font-family: 'Bebas Neue', sans-serif; font-size: 72px;
-    line-height: 1; color: var(--text); letter-spacing: 0.02em;
-  }
-  .price-amount sup { font-family: 'DM Mono', monospace; font-size: 24px; vertical-align: super; color: var(--text-muted); }
-  .price-label {
-    font-family: 'DM Mono', monospace; font-size: 12px;
-    color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase;
-    margin-bottom: 2rem; margin-top: 0.25rem;
-  }
-  .price-features { list-style: none; margin: 1.5rem 0 2rem; }
-  .price-features li {
-    font-size: 16px; color: var(--text-muted);
-    padding: 8px 0; border-bottom: 0.5px solid var(--border-subtle);
-    display: flex; align-items: flex-start; gap: 10px; font-weight: 300;
-  }
-  .price-features li::before { content: '→'; color: var(--magenta); font-size: 14px; margin-top: 2px; flex-shrink: 0; }
-  .price-note {
-    font-family: 'DM Mono', monospace; font-size: 12px;
-    color: var(--text-dim); line-height: 1.6; letter-spacing: 0.04em;
-    padding-top: 1rem; border-top: 0.5px solid var(--border-subtle);
+    z-index: 50;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.2s ease-out;
+    overflow-y: auto;
+    padding: 1rem 0;
   }
 
-  /* ── CHART ── */
-  .chart-side h3 {
-    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
-    letter-spacing: 0.04em; margin-bottom: 0.5rem;
+  nav.active {
+    transform: scaleY(1);
   }
-  .chart-side .sub {
-    font-size: 18px; color: var(--text-muted); font-weight: 300;
-    line-height: 1.7; margin-bottom: 2rem; max-width: 480px;
-  }
-  .engine-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
-  .pill {
-    font-family: 'DM Mono', monospace; font-size: 10px;
-    letter-spacing: 0.08em; padding: 4px 10px; border-radius: 2px;
-    border: 0.5px solid var(--border-subtle); color: var(--text-dim);
-    display: flex; align-items: center; gap: 6px;
-  }
-  .pill .dot { width: 6px; height: 6px; border-radius: 50%; }
-  .pill.ra { border-color: rgba(232,0,140,0.3); color: #E8008C; }
-  .pill.ra .dot { background: #E8008C; }
-  .pill.ue .dot { background: #888; }
-  .pill.free .dot { background: #4A4870; }
-  .chart-wrap { position: relative; width: 100%; height: 280px; margin-bottom: 1rem; }
-  .chart-note {
-    font-family: 'DM Mono', monospace; font-size: 16px;
-    color: #9A96B8; letter-spacing: 0.03em;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .chart-note-row {
-    display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;
-  }
-  .chart-note-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    flex-shrink: 0; margin-top: 4px;
-  }
-  .chart-note-savings {
-    margin-top: 4px; padding-top: 8px;
-    border-top: 0.5px solid var(--border-subtle);
-  }
-  .tiers {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: var(--border-subtle);
-    border: 0.5px solid var(--border-subtle); border-radius: 4px;
-    overflow: hidden; margin-top: 1.5rem;
-  }
-  .tier { background: var(--bg3); padding: 1.25rem 1.5rem; }
-  .tier-range {
-    font-family: 'DM Mono', monospace; font-size: 15px;
-    color: var(--text-dim); letter-spacing: 0.1em;
-    text-transform: uppercase; margin-bottom: 0.4rem;
-  }
-  .tier-rate { font-family: 'Bebas Neue', sans-serif; font-size: 38px; color: var(--text); line-height: 1; }
-  .tier-rate.accent { color: var(--magenta); }
-  .tier-desc { font-size: 16px; color: var(--text-dim); margin-top: 0.4rem; font-weight: 300; }
 
-  /* ── COMPARE TABLE ── */
-  .compare-table { width: 100%; border-collapse: collapse; margin-top: 2.5rem; font-size: 14px; }
-  .compare-table th {
-    font-family: 'DM Mono', monospace; font-size: 10px;
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim);
-    text-align: left; padding: 12px 20px;
-    border-bottom: 0.5px solid var(--border-subtle); font-weight: 400;
+  main {
+    margin-left: 0;
+    max-width: 100%;
+    padding: 2rem 1rem;
   }
-  .compare-table td {
-    padding: 16px 20px; border-bottom: 0.5px solid var(--border-subtle);
-    color: var(--text-muted); font-weight: 300; vertical-align: middle;
-  }
-  .compare-table tr.ra-row td { background: rgba(232,0,140,0.04); color: var(--text); font-weight: 400; }
-  .compare-table tr.ra-row td:first-child { border-left: 2px solid var(--magenta); }
-  .compare-table td.highlight { color: var(--magenta); font-weight: 500; }
-  .compare-table td.good { color: var(--cyan); }
-  .compare-table td.neutral { color: var(--text-dim); }
-  .engine-name { font-weight: 500; color: var(--text); }
 
-  /* ── CROSS PROMO ── */
-  .xpromo {
-    background: var(--bg2); border: 0.5px solid var(--border-subtle);
-    border-radius: 4px; padding: 2.5rem 3rem;
-    display: flex; gap: 3rem; align-items: center;
-    margin-top: 4rem; flex-wrap: wrap;
+  h1 {
+    font-size: 28px;
   }
-  .xpromo-label {
-    font-family: 'DM Mono', monospace; font-size: 12px;
-    color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase;
-    margin-bottom: 0.5rem;
-  }
-  .xpromo-name {
-    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
-    color: var(--text); letter-spacing: 0.04em; line-height: 1;
-    margin-bottom: 0.5rem;
-  }
-  .xpromo-desc { font-size: 15px; color: var(--text-muted); font-weight: 300; line-height: 1.7; max-width: 400px; }
-  .xpromo-link {
-    font-family: 'DM Mono', monospace; font-size: 14px;
-    color: var(--cyan); border: 0.5px solid rgba(0,229,212,0.25);
-    padding: 10px 20px; border-radius: 2px; text-decoration: none;
-    letter-spacing: 0.06em; white-space: nowrap; transition: background 0.2s;
-    display: inline-block; margin-top: 1.25rem; align-self: flex-start;
-  }
-  .xpromo-link:hover { background: rgba(0,229,212,0.06); }
 
-  /* ── FAQ ── */
-  .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
-  .faq-q { font-size: 15px; font-weight: 500; margin-bottom: 0.5rem; }
-  .faq-a { font-size: 14px; color: var(--text-muted); line-height: 1.75; font-weight: 300; }
+  h2 {
+    font-size: 18px;
+  }
 
-  /* ── DOCS ── */
-  .docs-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1px; border: 0.5px solid var(--border-subtle);
-    border-radius: 4px; overflow: hidden; margin-top: 3rem;
+  h3 {
+    font-size: 14px;
   }
-  .docs-card {
-    background: var(--bg2); padding: 2rem 1.75rem;
-    text-decoration: none; display: flex; flex-direction: column; gap: 0.5rem;
-    transition: background 0.2s; position: relative;
-  }
-  .docs-card:hover { background: var(--bg3); }
-  .docs-icon { font-size: 20px; color: var(--magenta); }
-  .docs-title { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: 0.02em; }
-  .docs-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; font-weight: 300; flex: 1; }
-  .docs-arrow {
-    font-size: 14px; color: var(--text-dim);
-    margin-top: 0.75rem; transition: color 0.2s; align-self: flex-start;
-  }
-  .docs-card:hover .docs-arrow { color: var(--magenta); }
-  .docs-cta {
-    display: inline-block; margin-top: 2rem;
-    font-family: 'DM Mono', monospace; font-size: 13px;
-    color: var(--text-muted); letter-spacing: 0.06em;
-    text-decoration: none; border-bottom: 0.5px solid var(--border-subtle);
-    padding-bottom: 2px; transition: color 0.2s, border-color 0.2s;
-  }
-  .docs-cta:hover { color: var(--text); border-color: var(--text-muted); }
 
-  /* ── CTA ── */
-  .cta-band {
-    text-align: center; padding: 100px 2.5rem;
-    background: linear-gradient(135deg, rgba(232,0,140,0.07) 0%, rgba(0,229,212,0.03) 100%);
-    border-top: 0.5px solid var(--border-subtle);
+  p, li, td {
+    font-size: 13px;
   }
-  .cta-band .section-lead { margin: 1rem auto 2.5rem; text-align: center; }
+
+  code {
+    font-size: 11px;
+  }
+
+  pre {
+    font-size: 11px;
+    padding: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  pre::before {
+    font-size: 8px;
+    top: 6px;
+    right: 8px;
+  }
+
+  table {
+    font-size: 11px;
+    margin: 0.75rem 0;
+  }
+
+  th, td {
+    padding: 6px 8px;
+  }
+
+  .api-block {
+    margin: 1rem 0;
+  }
+
+  .api-block-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .api-sig {
+    font-size: 12px;
+    flex: none;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .api-block-body {
+    padding: 0.75rem 1rem;
+  }
+
+  .api-tag {
+    font-size: 8px;
+    padding: 1px 5px;
+  }
+
+  .callout {
+    padding: 0.75rem 1rem;
+    font-size: 12px;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .key-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1px;
+  }
+
+  .key-row {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .ubo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .ubo-field {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
 
   footer {
-    padding: 2.5rem; display: flex; justify-content: space-between; align-items: center;
-    border-top: 0.5px solid var(--border-subtle);
-    font-family: 'DM Mono', monospace; font-size: 15px; color: var(--text-dim);
-    letter-spacing: 0.05em; flex-wrap: wrap; gap: 1rem;
-  }
-  footer span { color: var(--magenta); }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    margin-left: 0;
+    padding: 1.5rem 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
   }
 
-  @media (max-width: 768px) {
-    html, body { width: 100%; overflow-x: hidden; }
-    nav { padding: 1.5rem 1.25rem; position: relative; }
-    .hamburger { display: flex; }
-    .nav-links {
-      position: absolute; top: 100%; left: 0; right: 0;
-      flex-direction: column; gap: 0; background: var(--bg);
-      border-bottom: 0.5px solid var(--border-subtle);
-      max-height: 0; overflow: hidden; transition: max-height 0.3s;
-    }
-    .nav-links.active {
-      max-height: 400px;
-    }
-    .nav-links a {
-      padding: 1rem 1.25rem; border-bottom: 0.5px solid var(--border-subtle);
-      font-size: 14px;
-    }
-    .nav-links a:last-child {
-      border-bottom: none;
-    }
-    .nav-cta {
-      width: 100%; text-align: center; padding: 1.25rem;
-      border: none; background: var(--bg2);
-    }
-    section, .ra-section { padding: 60px 1.25rem; max-width: 100%; width: 100%; }
-    .hero { padding: 100px 1.25rem 60px; }
-    .hero-desc { max-width: 100%; }
-    .split-banner { grid-template-columns: 1fr; width: 100%; }
-    .split-panel { border-right: none; border-bottom: 0.5px solid var(--border-subtle); padding: 2rem 1.25rem; }
-    .pricing-layout { grid-template-columns: 1fr; gap: 2.5rem; width: 100%; }
-    .price-card { position: static; width: 100%; }
-    .chart-side { width: 100%; }
-    .chart-wrap { width: 100%; }
-    .chart-note { font-size: 21px; width: 100%; }
-    .tiers { grid-template-columns: 1fr; width: 100%; }
-    .faq-grid { grid-template-columns: 1fr; }
-    .ra-header { flex-direction: column; align-items: flex-start; }
-    .xpromo { flex-direction: column; gap: 1.5rem; padding: 2rem 1.25rem; width: 100%; }
-    .xpromo-desc { max-width: 100%; }
-    .cta-band { padding: 60px 1.25rem; }
-    .features-grid { grid-template-columns: 1fr; }
-    .compare-table { font-size: 12px; width: 100%; display: block; overflow-x: auto; }
-    .compare-table td, .compare-table th { padding: 10px 12px; }
-    footer { padding: 2rem 1.25rem; flex-direction: column; align-items: flex-start; }
+  footer a {
+    font-size: 10px;
   }
 
-  /* ── MOBILE ── */
-  @media (max-width: 768px) {
-    nav {
-      padding: 1.5rem 1.25rem;
-    }
-    .nav-logo { font-size: 16px; }
-    .nav-logo .sub { font-size: 10px; }
-    .hamburger {
-      display: flex;
-    }
-    .nav-links {
-      position: absolute; top: 60px; left: 0; right: 0;
-      flex-direction: column; gap: 0; background: var(--bg);
-      border-bottom: 0.5px solid var(--border-subtle);
-      max-height: 0; overflow: hidden; transition: max-height 0.3s;
-    }
-    .nav-links.active {
-      max-height: 400px;
-    }
-    .nav-links a {
-      padding: 1rem 1.25rem; border-bottom: 0.5px solid var(--border-subtle);
-      font-size: 14px;
-    }
-    .nav-links a:last-child {
-      border-bottom: none;
-    }
-    .nav-cta {
-      width: 100%; text-align: center; padding: 1.25rem;
-      border: none; background: var(--bg2);
-    }
+  .footer-logo {
+    margin-right: 0;
   }
+
+  .doc-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .version-row {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+
+  hr {
+    margin: 1.5rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 14px;
+  }
+
+  .logo-mark {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  main {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .api-sig {
+    font-size: 11px;
+  }
+
+  .badge {
+    display: none;
+  }
+
+  .header-right {
+    gap: 0.25rem;
+  }
+}
+
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">
-    DIGIFLUX<span class="dot">.ONE</span>
-    <span class="sub">∮ FLUX STUDIOS</span>
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<header>
+  <div class="logo">
+    <span class="logo-mark">Ra</span>
+    Ra Engine
+    <a href="https://digiflux.one" class="logo-sub">digiflux.one/docs</a>
   </div>
-  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-  <div class="nav-links" id="navLinks">
-    <a href="#pipeline">Pipeline</a>
-    <a href="#ra-engine">Ra Engine</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#compare">Compare</a>
-    <a href="https://digiflux.one/docs/">Docs</a>
-    <a href="#pricing" class="nav-cta">Buy Ra Engine — $49.99</a>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  <div class="header-right">
+    <span class="badge badge-orange">Vulkan 1.4</span>
+    <span class="badge badge-cyan">RTX Hardware</span>
+    <span class="badge">$49.99/seat</span>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav>
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a class="nav-item active" href="#intro">Introduction</a>
+    <a class="nav-item" href="#quickstart">Quick Start</a>
+    <a class="nav-item" href="#hardware">Hardware Requirements</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Architecture</div>
+    <a class="nav-item" href="#renderer">Renderer</a>
+    <a class="nav-item sub" href="#pipeline">Ray Tracing Pipeline</a>
+    <a class="nav-item sub" href="#acceleration">Acceleration Structure</a>
+    <a class="nav-item" href="#ubo">Camera UBO</a>
+    <a class="nav-item" href="#shaders">Shader System</a>
+    <a class="nav-item" href="#lights">Lighting</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Scene Format</div>
+    <a class="nav-item" href="#gltf">GLTF 2.0</a>
+    <a class="nav-item sub" href="#extensions">Extensions</a>
+    <a class="nav-item sub" href="#materials">Materials</a>
+    <a class="nav-item sub" href="#lights-gltf">Light Nodes</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Editor</div>
+    <a class="nav-item" href="#editor">Scene Editor</a>
+    <a class="nav-item sub" href="#hierarchy">Hierarchy View</a>
+    <a class="nav-item sub" href="#controls">Controls Reference</a>
+    <a class="nav-item sub" href="#console">Console View</a>
+    <a class="nav-item sub" href="#fly">Fly Mode</a>
+    <a class="nav-item sub" href="#groups">Object Groups</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Build System</div>
+    <a class="nav-item" href="#build">go.sh Reference</a>
+    <a class="nav-item" href="#compile">Compiling Shaders</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Known Constraints</div>
+    <a class="nav-item" href="#constraints">Platform Notes</a>
+    <a class="nav-item" href="#pitfalls">Critical Pitfalls</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Scripting</div>
+    <a class="nav-item" href="#lua">Lua Scripting</a>
+    <a class="nav-item sub" href="lua-api.html">→ Full API Reference</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Products</div>
+    <a class="nav-item" href="#products">Built with Ra</a>
   </div>
 </nav>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
+<!-- MAIN -->
+<main>
 
-  <div class="hero-eyebrow">Flux Studios · Color It Company LLC</div>
-  <div class="hero-wordmark">
-    <span class="digiflux">DIGIFLUX</span>
-    <span class="dot-one">.ONE</span>
+<!-- INTRODUCTION -->
+<section class="doc-section" id="intro">
+  <div class="version-row">
+    <span class="tag tag-orange">Graphics 1.0 Alpha — Complete</span>
+    <span class="tag tag-cyan">Emissive GI · ACES · Depth Fog</span>
+    <span class="tag tag-purple">Flux Studios ∮</span>
   </div>
-  <p class="hero-sub">Hardware RTX Graphics Pipeline</p>
-  <p class="hero-desc">
-    Cinematic ray tracing built for real hardware.
-    Theatrical-quality global illumination, physically correct lighting,
-    and a level editor you can actually own — for one flat price.
-  </p>
-  <div class="hero-actions">
-    <a href="#ra-engine" class="btn-primary">Get Ra Engine — $49.99</a>
-    <a href="#pipeline" class="btn-ghost">Explore the pipeline</a>
-  </div>
-  <div class="hero-badges">
-    <span class="badge lit">Vulkan 1.4</span>
-    <span class="badge lit">VK_KHR_ray_tracing_pipeline</span>
-    <span class="badge">GLTF 2.0</span>
-    <span class="badge">RTX 2060+</span>
-    <span class="badge">RX 6600 · Arc A380</span>
-  </div>
-</div>
+  <h1>Ra <span>Engine</span></h1>
+  <p class="hero-sub">A Vulkan 1.4 hardware ray tracing engine with a terminal-first UI philosophy. Theatrical-quality lighting informed by McCandless theory. Built at Flux Studios under Color It Company LLC.</p>
 
-<!-- PRODUCT SPLIT -->
-<div class="split-banner">
-  <div class="split-panel">
-    <div class="split-tag">The pipeline</div>
-    <div class="split-name">DIGIFLUX<span class="accent">.ONE</span></div>
-    <div class="split-desc">
-      A hardware RTX rendering pipeline designed around theatrical lighting theory.
-      Full ray tracing from raygen to closesthit — no rasterization fallbacks,
-      no fake ambient terms. Real light, real shadows, real GI.
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">⬡</div>
+      <h4>Hardware RTX</h4>
+      <p>Full VK_KHR_ray_tracing_pipeline. Reflections, refractions, single-bounce GI — all hardware accelerated.</p>
     </div>
-    <span class="split-pill">GRAPHICS PIPELINE</span>
-  </div>
-  <div class="split-panel">
-    <div class="split-tag">The editor</div>
-    <div class="split-name">RA <span class="accent">ENGINE</span></div>
-    <div class="split-desc">
-      The level editor and developer toolchain built on top of Digiflux.one.
-      Terminal-first, GLTF 2.0 native, scene hierarchy, fly mode, light placement.
-      Available on Steam. One seat, no subscription.
+    <div class="card">
+      <div class="card-icon">⟨/⟩</div>
+      <h4>Terminal-First UI</h4>
+      <p>ANSI escape codes, F-key menu system. No ImGui rendering over the viewport.</p>
     </div>
-    <span class="split-pill">$49.99 / SEAT · ON STEAM</span>
-  </div>
-</div>
-
-<!-- PIPELINE -->
-<section id="pipeline">
-  <div class="section-tag">Digiflux.one — the pipeline</div>
-  <h2 class="section-title">Light as it<br>actually behaves</h2>
-  <p class="section-lead">
-    Digiflux.one is a Vulkan 1.4 hardware ray tracing pipeline informed by theatrical lighting
-    and McCandless method. Every photon is traced. Every surface responds correctly.
-  </p>
-
-  <div class="features-grid">
-    <div class="feature-card">
-      <span class="feature-icon">◈</span>
-      <div class="feature-title">Full hardware RTX</div>
-      <div class="feature-desc">VK_KHR_ray_tracing_pipeline from the ground up. Reflections, refractions, and GI in a single coherent ray budget.</div>
+    <div class="card">
+      <div class="card-icon">◈</div>
+      <h4>GLTF 2.0 Scenes</h4>
+      <p>tinygltf with KHR_lights_punctual, KHR_materials_transmission, RA custom extras.</p>
     </div>
-    <div class="feature-card">
-      <span class="feature-icon">◎</span>
-      <div class="feature-title">Emissive global illumination</div>
-      <div class="feature-desc">Multi-sample GI with correct Monte Carlo scaling. Light bleeds from emissive geometry — not from fake ambient terms.</div>
-    </div>
-    <div class="feature-card">
-      <span class="feature-icon">⬡</span>
-      <div class="feature-title">Theatrical lighting model</div>
-      <div class="feature-desc">McCandless method informs light placement philosophy. Inverse-square attenuation with physically calibrated intensities.</div>
-    </div>
-    <div class="feature-card">
-      <span class="feature-icon">◫</span>
-      <div class="feature-title">ACES tonemapping</div>
-      <div class="feature-desc">ACES and Gamma toggleable per session. Vivid theatrical linear or cinema-grade tone — your creative vision, your call.</div>
-    </div>
-    <div class="feature-card">
-      <span class="feature-icon">◱</span>
-      <div class="feature-title">GLTF 2.0 pipeline</div>
-      <div class="feature-desc">Full tinygltf integration. KHR_lights_punctual, KHR_materials_transmission, IOR, and Ra-native material extensions.</div>
-    </div>
-    <div class="feature-card">
-      <span class="feature-icon">⊛</span>
-      <div class="feature-title">Exponential depth fog</div>
-      <div class="feature-desc">Atmosphere that reacts to scene lighting. Fog density tunable per scene with correct interaction with GI and emissives.</div>
+    <div class="card">
+      <div class="card-icon">✦</div>
+      <h4>McCandless Lighting</h4>
+      <p>Theatrical lighting theory baked into the pipeline. Inverse-square attenuation, calibrated intensities.</p>
     </div>
   </div>
 </section>
 
-<hr class="divider">
+<!-- QUICK START -->
+<section class="doc-section" id="quickstart">
+  <h2><span class="accent">01.</span> Quick Start</h2>
 
-<!-- RA ENGINE -->
-<div class="ra-section-wrap" id="ra-engine">
-  <div class="ra-section">
+  <h3>Running the Engine</h3>
+  <pre data-label="bash"><code><span class="cm"># Standard launch — skip recompile, suppress MangoHUD</span>
+./go.sh --skip-compile --no-mango
 
-    <div class="ra-header">
-      <div class="ra-title-block">
-        <div class="section-tag">Ra Engine — the editor</div>
-        <h2 class="section-title">The tool you<br>actually own</h2>
-        <p class="section-lead">
-          Ra Engine is the level editor and developer toolchain built on Digiflux.one.
-          Terminal-first, scene hierarchy, fly mode, light placement, GLTF export.
-          Available on Steam. $49.99 per seat, one-time.
-        </p>
-      </div>
-      <a href="https://store.steampowered.com/app/4732830/Ra_Engine/" class="ra-steam-badge">Available on Steam →</a>
-    </div>
+<span class="cm"># Launch with a specific scene</span>
+./go.sh --skip-compile --no-mango scenes/launch_up_tutorial1.gltf
 
-    <div class="pricing-layout" id="pricing">
-      <div class="price-card">
-        <div class="price-amount"><sup>$</sup>49<sup style="font-size:32px">.99</sup></div>
-        <div class="price-label">per seat · one-time</div>
-        <ul class="price-features">
-          <li>Perpetual license — yours forever</li>
-          <li>All future updates at your purchase price</li>
-          <li>No subscription, no runtime fees, no per-install charges</li>
-          <li>Price increases with milestones — early buyers locked in</li>
-          <li>Revenue share terms fixed permanently — never change</li>
-        </ul>
-        <a href="https://store.steampowered.com/app/4732830/Ra_Engine/" class="btn-primary" style="display:block;text-align:center;margin-bottom:1rem;">
-          Buy Ra Engine on Steam</a>
-        </a>
-        <div class="price-note">
-          BY PURCHASING YOU AGREE TO THE LICENSE TERMS.<br>
-          REVENUE SHARE IS SELF-REPORTED ANNUALLY.<br>
-          COLOR IT COMPANY LLC RESERVES AUDIT RIGHTS.
-        </div>
-      </div>
+<span class="cm"># Play mode (locks cursor, enables game input)</span>
+./go.sh --skip-compile --no-mango --play scenes/launch_up_tutorial1.gltf
 
-      <div class="chart-side">
-        <h3>Revenue share — honest and fair</h3>
-        <p class="sub">
-          At scale, Ra Engine costs a fraction of Unreal. Thresholds reset every year —
-          a slow year costs you nothing. A great year costs you far less than you'd expect.
-        </p>
-        <div class="engine-pills">
-          <div class="pill ra"><span class="dot"></span>Ra Engine (annual)</div>
-          <div class="pill ue"><span class="dot"></span>Unreal Engine (lifetime)</div>
-          <div class="pill free"><span class="dot"></span>Godot · Unity · GameMaker</div>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="pricingChart" role="img" aria-label="Royalties owed by annual gross revenue comparing Ra Engine, Unreal Engine, and free engines">Ra Engine: $3K at $250K, $8K at $500K, $18K at $1M, $28K at $2M, $58K at $5M. Unreal: $0 until $1M lifetime, $50K at $2M, $200K at $5M. Others: always $0.</canvas>
-        </div>
-        <div class="chart-note">
-          <span style="color:#C4527A">Ra Engine</span> — 2% on annual revenue above $100K · 1% above $1M · resets each January<br><br>
-          <span style="color:#286667">Unreal Engine</span> — 5% on lifetime gross above $1M · thresholds never reset<br><br>
-          At $5M annual gross, Ra Engine saves you <span style="color:#42B5AE">$142,000</span> vs Unreal.
-        </div>
-        <div class="tiers">
-          <div class="tier">
-            <div class="tier-range">Under $100K / year</div>
-            <div class="tier-rate accent">0%</div>
-            <div class="tier-desc">Nothing owed. Ship freely.</div>
-          </div>
-          <div class="tier">
-            <div class="tier-range">$100K – $1M / year</div>
-            <div class="tier-rate">2%</div>
-            <div class="tier-desc">On revenue above the threshold.</div>
-          </div>
-          <div class="tier">
-            <div class="tier-range">Above $1M / year</div>
-            <div class="tier-rate">1%</div>
-            <div class="tier-desc">Rate drops as you grow.</div>
-          </div>
-          <div class="tier">
-            <div class="tier-range">Resets</div>
-            <div class="tier-rate accent">Annual</div>
-            <div class="tier-desc">A bad year costs nothing.</div>
-          </div>
-        </div>
-      </div>
-    </div>
+<span class="cm"># Full recompile from scratch</span>
+./go.sh --clean --no-mango</code></pre>
 
-    <!-- CROSS PROMO -->
-    <div class="xpromo">
-      <div>
-        <div class="xpromo-label">Built with Ra Engine</div>
-        <div class="xpromo-name">LAUNCH UP</div>
-        <div class="xpromo-desc">
-          A vertical FPS platformer built entirely on Digiflux.one and Ra Engine.
-          Our launch title — proof that the pipeline ships real games.
-          Available on Steam.
-        </div>
-        <a href="https://store.steampowered.com/app/4732830/Ra_Engine/" class="xpromo-link">View on Steam →</a>
-      </div>
-    </div>
-
+  <div class="callout callout-danger">
+    <strong>⚠ Always pass --no-mango.</strong> MangoHUD causes segfaults on Vulkan teardown when overlaid on the Ra Engine window. This flag is not optional.
   </div>
-</div>
 
-<!-- COMPARE -->
-<section id="compare">
-  <div class="section-tag">Comparison</div>
-  <h2 class="section-title">How we stack up</h2>
-  <p class="section-lead">
-    The only hardware RTX editor with a one-time seat fee, no subscription,
-    and revenue share that rewards success instead of taxing survival.
-  </p>
-  <table class="compare-table">
-    <thead>
-      <tr>
-        <th>Engine</th>
-        <th>Seat cost</th>
-        <th>Rev share</th>
-        <th>Threshold</th>
-        <th>Resets</th>
-        <th>Hardware RTX</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr class="ra-row">
-        <td><span class="engine-name">Ra Engine</span></td>
-        <td class="highlight">$49.99 once</td>
-        <td class="highlight">2% → 1%</td>
-        <td class="highlight">$100K / $1M</td>
-        <td class="good">Annual ✓</td>
-        <td class="good">Yes ✓</td>
-      </tr>
-      <tr>
-        <td><span class="engine-name">Unreal Engine</span></td>
-        <td class="neutral">Free</td>
-        <td>5%</td>
-        <td>$1M lifetime</td>
-        <td class="neutral">Never</td>
-        <td>Yes</td>
-      </tr>
-      <tr>
-        <td><span class="engine-name">Unity Pro</span></td>
-        <td>$185/mo/seat</td>
-        <td class="good">0%</td>
-        <td>N/A</td>
-        <td class="good">N/A</td>
-        <td class="neutral">Limited</td>
-      </tr>
-      <tr>
-        <td><span class="engine-name">GameMaker</span></td>
-        <td>$9.99–$79/mo</td>
-        <td class="good">0%</td>
-        <td>N/A</td>
-        <td class="good">N/A</td>
-        <td class="neutral">No</td>
-      </tr>
-      <tr>
-        <td><span class="engine-name">Godot</span></td>
-        <td class="good">Free</td>
-        <td class="good">0%</td>
-        <td>N/A</td>
-        <td class="good">N/A</td>
-        <td class="neutral">No</td>
-      </tr>
-    </tbody>
+  <h3>Compiling Shaders</h3>
+  <p>After any change to <code>.rchit</code>, <code>.rgen</code>, <code>.rmiss</code>, or <code>.rint</code> files, recompile the SPIR-V:</p>
+  <pre data-label="bash"><code>./compile_shaders.sh</code></pre>
+  <p>The active raygen is <code>raygen.rgen</code> → <code>raygen_rgen.spv</code>. The file <code>raygen_aa.rgen</code> is kept in sync but not compiled into the active pipeline.</p>
+
+  <h3>Test Scenes</h3>
+  <table>
+    <tr><th>Scene</th><th>Purpose</th></tr>
+    <tr><td>scenes/material_showcase_v2.gltf</td><td>Material / lighting test bed. All material types represented.</td></tr>
+    <tr><td>scenes/launch_up_tutorial1.gltf</td><td>Launch Up Level 1. 17 rising platforms, goal pad at Y=26.5m.</td></tr>
   </table>
 </section>
 
-<hr class="divider">
+<!-- HARDWARE -->
+<section class="doc-section" id="hardware">
+  <h2><span class="accent">02.</span> Hardware Requirements</h2>
 
-<!-- FAQ -->
-<section id="faq">
-  <div class="section-tag">Questions</div>
-  <h2 class="section-title">Straight answers</h2>
-  <div class="faq-grid">
-    <div class="faq-item">
-      <div class="faq-q">What is the relationship between Digiflux.one and Ra Engine?</div>
-      <div class="faq-a">Digiflux.one is the graphics pipeline — the renderer, the ray tracing stack, the lighting model. Ra Engine is the editor and toolchain built on top of it. When you buy Ra Engine, you get full access to the Digiflux.one pipeline.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">Will the revenue share terms ever change?</div>
-      <div class="faq-a">No. The revenue share structure is permanent and will never change. This commitment is published publicly. Buy today at 2% / 1% and that is your rate forever, regardless of future seat pricing.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">What happens if the seat price increases?</div>
-      <div class="faq-a">Your purchase is grandfathered at the price you paid. All future engine updates are included. Early buyers are never penalized for supporting us early.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">How does the annual reset work?</div>
-      <div class="faq-a">Revenue thresholds reset each calendar year. If your game earns $80K in year one and $120K in year two, you owe nothing in year one and 2% of $20K in year two. A bad year never carries forward.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">How is revenue share reported?</div>
-      <div class="faq-a">Self-reported annually. If your game exceeds the $100K threshold, you submit a report and payment by January 31 of the following year. Color It Company LLC reserves the right to audit with 30 days notice.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">What hardware does Digiflux.one target?</div>
-      <div class="faq-a">RTX 2060 as the baseline, with RX 6600 and Arc A380 class hardware in scope. Full Vulkan 1.4 with VK_KHR_ray_tracing_pipeline required. No software RT fallback — this pipeline is built for real ray tracing.</div>
-    </div>
+  <table>
+    <tr><th>Tier</th><th>GPU</th><th>Notes</th></tr>
+    <tr><td>Development / Minimum</td><td>NVIDIA RTX 3060</td><td>Primary dev target and minimum required GPU. Per-object BLAS architecture.</td></tr>
+    <tr><td>Supported</td><td>AMD RX 6600</td><td>RDNA2 hardware RT. RADV driver — note primitiveOffset quirks.</td></tr>
+    <tr><td>Supported</td><td>Intel Arc A380</td><td>Xe-HPG hardware RT. Validated with Mesa ANV.</td></tr>
+  </table>
+
+  <p>Platform: <strong>Fedora Linux</strong>. Vulkan 1.4 required. <code>VK_LAYER_KHRONOS_validation</code> available via <code>VK_INSTANCE_LAYERS</code> for debug builds.</p>
+</section>
+
+<!-- RENDERER -->
+<section class="doc-section" id="renderer">
+  <h2><span class="accent">03.</span> Renderer</h2>
+
+  <p>Ra Engine uses a full hardware ray tracing pipeline. Every pixel is ray traced — there is no rasterization fallback. The pipeline dispatches from <code>raygen.rgen</code> and traces recursively through closest-hit and miss shaders.</p>
+
+  <h3 id="pipeline">Ray Tracing Pipeline</h3>
+
+  <p>Recursive ray order per primary ray:</p>
+  <ol>
+    <li><strong>Reflections</strong> — mirror and glossy bounces, depth-gated at bounce ≤ 1 for shadow rays</li>
+    <li><strong>Refractions</strong> — enter/exit pairs tracked via <code>fromRefraction</code> integer in RayPayload; suppresses reflection spawning inside refraction chains</li>
+    <li><strong>GI (Global Illumination)</strong> — single bounce, multi-sample. Modes: Off / 1 / 2 / 4 samples. <code>fromGI</code> flag skips shadow rays on GI hits. Correct 2× Monte Carlo scale factor applied.</li>
+  </ol>
+
+  <p>After all tracing, a post-imageStore pass in <code>raygen.rgen</code> draws the crosshair over the tonemapped image.</p>
+
+  <h3>Tonemapping &amp; Color</h3>
+  <table>
+    <tr><th>Setting</th><th>Behavior</th></tr>
+    <tr><td>ACES On</td><td>Filmic S-curve tone map. Rolls off highlights.</td></tr>
+    <tr><td>ACES Off</td><td>Linear passthrough. Vivid, saturated theatrical look.</td></tr>
+    <tr><td>Gamma On</td><td>sRGB gamma correction applied (2.2 curve).</td></tr>
+    <tr><td>Gamma Off + ACES Off</td><td><strong>Preferred default.</strong> Pure linear, maximum vibrancy.</td></tr>
+  </table>
+
+  <h3 id="acceleration">Acceleration Structure</h3>
+
+  <p>Ra Engine uses a <strong>per-object BLAS</strong> architecture. Each <code>SceneObject</code> owns a <code>PerObjectBLAS</code> struct. The TLAS holds one instance per BLAS, all with identity transforms.</p>
+
+  <pre data-label="c++"><code><span class="cm">// DigifluxEngine — per-object BLAS array (parallel to geometry SceneObjects)</span>
+<span class="kw">struct</span> <span class="fn">PerObjectBLAS</span> {
+    VkAccelerationStructureKHR as  = VK_NULL_HANDLE;
+    VkBuffer                   buf = VK_NULL_HANDLE;
+    VkDeviceMemory             mem = VK_NULL_HANDLE;
+};
+std::vector&lt;PerObjectBLAS&gt; objectBLASes;</code></pre>
+
+  <p><strong>Vertex positions are world-space baked.</strong> <code>applyAllObjectTransforms()</code> bakes the full transform into vertex data before BLAS build. <code>gl_ObjectToWorldEXT</code> is therefore identity per instance and not referenced in any shader.</p>
+
+  <p><strong>Index addressing in closesthit:</strong> <code>gl_InstanceCustomIndexEXT</code> stores <code>firstIndex</code> for each TLAS instance, mapping the local <code>gl_PrimitiveID</code> back to the correct slot in the global index buffer:</p>
+
+  <pre data-label="glsl"><code><span class="kw">uint</span> baseIndex = gl_InstanceCustomIndexEXT;
+<span class="kw">uint</span> i0 = indices[baseIndex + <span class="nm">3</span> * gl_PrimitiveID + <span class="nm">0</span>];
+<span class="kw">uint</span> i1 = indices[baseIndex + <span class="nm">3</span> * gl_PrimitiveID + <span class="nm">1</span>];
+<span class="kw">uint</span> i2 = indices[baseIndex + <span class="nm">3</span> * gl_PrimitiveID + <span class="nm">2</span>];</code></pre>
+
+  <div class="callout callout-cyan">
+    <strong>BLAS rebuild functions:</strong> <code>buildObjectBLAS(idx, obj)</code> — single object; <code>buildAllBLASes()</code> — full rebuild; <code>buildTLAS()</code> — rebuild TLAS after any BLAS change; <code>destroyAllBLASes()</code> — cleanup before full rebuild or shutdown. Register each <code>SceneObject</code> before calling <code>buildAllBLASes()</code>.
   </div>
 </section>
 
-<!-- CTA -->
-<hr class="divider">
+<!-- UBO -->
+<section class="doc-section" id="ubo">
+  <h2><span class="accent">04.</span> Camera UBO — Field Order</h2>
 
-<!-- DOCS -->
-<section id="docs">
-  <div class="section-tag">Documentation</div>
-  <h2 class="section-title">Everything you need<br>to build</h2>
-  <p class="section-lead">
-    Full documentation for Digiflux.one and Ra Engine — pipeline architecture, GLTF scene format, Lua scripting, shader reference, and tooling guides.
-  </p>
+  <p>The <code>CameraUBO</code> struct must match exactly across <strong>all shader files</strong> and the C++ host. Order is fixed — do not reorder.</p>
 
-  <div class="docs-grid">
-    <a href="https://digiflux.one/docs/" class="docs-card">
-      <span class="docs-icon">◈</span>
-      <div class="docs-title">Getting Started</div>
-      <div class="docs-desc">Install Ra Engine, load your first scene, and run with hardware RTX in minutes.</div>
-      <span class="docs-arrow">→</span>
-    </a>
-    <a href="https://digiflux.one/docs/" class="docs-card">
-      <span class="docs-icon">◱</span>
-      <div class="docs-title">Scene Format</div>
-      <div class="docs-desc">GLTF 2.0 pipeline, Ra-native extensions, material index rules, and extras node reference.</div>
-      <span class="docs-arrow">→</span>
-    </a>
-    <a href="https://digiflux.one/docs/" class="docs-card">
-      <span class="docs-icon">⬡</span>
-      <div class="docs-title">Lua Scripting</div>
-      <div class="docs-desc">Hot-reloadable game logic, state machines, the full Lua API surface, and Ra Engine bindings.</div>
-      <span class="docs-arrow">→</span>
-    </a>
-    <a href="https://digiflux.one/docs/" class="docs-card">
-      <span class="docs-icon">⊛</span>
-      <div class="docs-title">Shader Reference</div>
-      <div class="docs-desc">Raygen, closesthit, miss — shader architecture, CameraUBO field order, and extension constraints.</div>
-      <span class="docs-arrow">→</span>
-    </a>
+  <div class="ubo-grid">
+    <div class="ubo-field"><span class="ubo-field-name">viewInverse</span><span class="ubo-field-type">mat4</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">projInverse</span><span class="ubo-field-type">mat4</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">numLights</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">frameCounter</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">aaSamples</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">jitterStrength</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">aaPattern</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">reflectionsEnabled</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">maxBounces</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">glossySamples</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">emissiveStrength</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">fogDensity</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">giSamples</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">acesEnabled</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">gammaEnabled</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">highlightFirstVertex</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">highlightVertexCount</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">flyCrosshairEnabled</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">highlightStyle</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">hudEnabled</span><span class="ubo-field-type">uint</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">hudScore</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">hudHeight</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">reachIndicatorEnabled</span><span class="ubo-field-type">int</span></div>
+    <div class="ubo-field"><span class="ubo-field-name">reachIndicatorNorm</span><span class="ubo-field-type">float</span></div>
   </div>
 
-  <a href="https://digiflux.one/docs/" class="docs-cta">Browse all documentation →</a>
+  <div class="callout callout-cyan">
+    Any mismatch in field order between shaders and the C++ <code>CameraUBO</code> struct will cause silent data corruption — wrong settings reaching the GPU with no validation error. Total: <strong>24 fields</strong>. <code>reachIndicatorEnabled</code> and <code>reachIndicatorNorm</code> are declared in <code>closesthit.rchit</code> for layout sync only — they are only consumed in <code>raygen.rgen</code>.
+  </div>
 </section>
 
-<hr class="divider">
+<!-- SHADERS -->
+<section class="doc-section" id="shaders">
+  <h2><span class="accent">05.</span> Shader System</h2>
 
-<div class="cta-band">
-  <div class="section-tag" style="text-align:center">Get started today</div>
-  <h2 class="section-title">Build something<br>that looks <span style="color:var(--magenta)">real</span></h2>
-  <p class="section-lead">
-    One seat. Every update. Hardware RTX from day one.
-    No subscription, no runtime fees, no surprises.
-  </p>
-  <a href="https://store.steampowered.com/app/4732830/Ra_Engine/" class="btn-primary" style="font-size:15px;padding:16px 48px;">
-    Buy Ra Engine on Steam — $49.99
-  </a>
+  <h3>Shader Files</h3>
+  <table>
+    <tr><th>File</th><th>Stage</th><th>Notes</th></tr>
+    <tr><td>raygen.rgen</td><td>Ray Generation</td><td>Active pipeline. Handles tonemapping and crosshair pass.</td></tr>
+    <tr><td>raygen_aa.rgen</td><td>Ray Generation</td><td>Kept in sync. Not compiled into active pipeline.</td></tr>
+    <tr><td>closesthit.rchit</td><td>Closest Hit</td><td>Material eval, light culling, GI/reflection/refraction dispatch.</td></tr>
+    <tr><td>miss.rmiss</td><td>Miss</td><td>Sky / environment color on ray miss.</td></tr>
+  </table>
+
+  <h3>Light Culling</h3>
+  <p>Per-light culling in <code>closesthit.rchit</code> uses an influence radius computed as:</p>
+  <pre data-label="glsl"><code><span class="kw">float</span> <span class="fn">influenceRadius</span> = <span class="fn">sqrt</span>(light.intensity * <span class="nm">1000.0</span>);</code></pre>
+  <p>Lights beyond this radius from the hit point are skipped entirely, with no shadow ray cast.</p>
+
+  <h3>Glass / Zero-Roughness Safety</h3>
+  <p>Alpha is clamped to <code>1e-4</code> in GGX BRDF evaluation to prevent NaN from division by zero at perfect mirror roughness:</p>
+  <pre data-label="glsl"><code><span class="kw">float</span> alpha = <span class="fn">max</span>(roughness * roughness, <span class="nm">1e-4</span>);</code></pre>
+</section>
+
+<!-- LIGHTS -->
+<section class="doc-section" id="lights">
+  <h2><span class="accent">06.</span> Lighting</h2>
+
+  <p>Ra Engine uses physically-based inverse-square attenuation. Intensities must be calibrated carefully — oversaturated values wash all surfaces to white.</p>
+
+  <h3>Intensity Calibration</h3>
+  <p>Use inverse-square attenuation: <code>illuminance = intensity / (distance²)</code>. Start low and increase. A point light at <code>intensity = 10</code> will fully illuminate geometry within ~3 metres.</p>
+
+  <h3>GI Performance Flags</h3>
+  <ul>
+    <li><strong><code>fromGI</code></strong> — set on GI rays. Skips shadow ray casting on GI hits, halving secondary ray count.</li>
+    <li><strong><code>fromRefraction</code></strong> — integer in RayPayload. Suppresses reflection spawning inside refraction chains without breaking enter/exit pairs.</li>
+    <li><strong>Shadow ray depth gate</strong> — shadow rays only cast at bounce depth ≤ 1.</li>
+  </ul>
+
+  <h3>Adding Lights in the Editor</h3>
+  <p>Press <span class="keybind">KP*</span> (hold) to open the Add Light submenu:</p>
+  <table>
+    <tr><th>Key</th><th>Action</th></tr>
+    <tr><td>S</td><td>Add spot light at camera position</td></tr>
+    <tr><td>A</td><td>Add point light at camera position</td></tr>
+    <tr><td>ESC</td><td>Cancel submenu</td></tr>
+  </table>
+</section>
+
+<!-- GLTF -->
+<section class="doc-section" id="gltf">
+  <h2><span class="accent">07.</span> Scene Format — GLTF 2.0</h2>
+
+  <p>Ra Engine loads scenes via <strong>tinygltf</strong>. Scenes must conform to GLTF 2.0 with the extensions listed below.</p>
+
+  <h3 id="extensions">Supported Extensions</h3>
+  <table>
+    <tr><th>Extension</th><th>Purpose</th></tr>
+    <tr><td>KHR_lights_punctual</td><td>Point and spot lights. Reference must live in node.extensions.KHR_lights_punctual.light in raw JSON.</td></tr>
+    <tr><td>KHR_materials_transmission</td><td>Glass / refractive materials.</td></tr>
+    <tr><td>KHR_materials_ior</td><td>Index of refraction for transmissive materials.</td></tr>
+    <tr><td>RA_materials_reflectivity</td><td>Ra-specific reflectivity scalar (custom extension).</td></tr>
+    <tr><td>_MATERIALINDEX</td><td>Per-vertex material index accessor. Required for multi-material meshes.</td></tr>
+  </table>
+
+  <h3 id="lights-gltf">Light Nodes — Critical</h3>
+  <div class="callout callout-danger">
+    <strong>TinyGLTF uses <code>node.light</code> (integer field)</strong> for light references, NOT <code>node.extensions</code>. The raw JSON must have the light reference in <code>node.extensions.KHR_lights_punctual.light</code>, but never read it from the generic extensions map in C++ code — use <code>node.light</code> only.
+  </div>
+
+  <h3 id="materials">Material Extras</h3>
+  <p>Ra Engine reads the following custom node extras:</p>
+  <table>
+    <tr><th>Extra field</th><th>Type</th><th>Description</th></tr>
+    <tr><td>ra_label</td><td>string</td><td>Display name shown in the scene hierarchy.</td></tr>
+    <tr><td>ra_euler</td><td>vec3</td><td>Euler rotation in degrees (baked, survives save/reload after round-trip fix).</td></tr>
+    <tr><td>ra_scale</td><td>vec3</td><td>Non-uniform scale. Min component: 0.01.</td></tr>
+    <tr><td>ra_group</td><td>string</td><td>Group membership name for hierarchy grouping.</td></tr>
+  </table>
+</section>
+
+<!-- EDITOR -->
+<section class="doc-section" id="editor">
+  <h2><span class="accent">08.</span> Scene Editor</h2>
+
+  <p>The editor is accessed via F-key menus overlaid as ANSI terminal text. No ImGui is used. All interaction is keyboard-driven.</p>
+
+  <h3>F-Key Menu System</h3>
+  <table>
+    <tr><th>Key</th><th>Menu</th></tr>
+    <tr><td><span class="keybind">F1</span></td><td>Console View — scrollable stdout/stderr capture panel</td></tr>
+    <tr><td><span class="keybind">F2</span></td><td>Video settings (ACES, Gamma, GI samples, fog, reflections...)</td></tr>
+    <tr><td><span class="keybind">F3</span></td><td>Scene hierarchy view</td></tr>
+    <tr><td><span class="keybind">F4</span></td><td>Fly mode toggle</td></tr>
+  </table>
+
+  <h3 id="hierarchy">Hierarchy View (F3)</h3>
+
+  <p>The <code>HierarchyView</code> constructor signature (in order):</p>
+  <pre data-label="c++"><code><span class="fn">HierarchyView</span>(
+  SceneManager*     sceneMgr,
+  lights*           lightsPtr,
+  bool*             lightsNeedUpdate,
+  LightDeleteCB     onLightDelete,
+  LightAddCB        onLightAdd,
+  ObjectAddCB       onObjectAdd,
+  SaveSceneCB       onSaveScene,
+  TlasRebuildCB     onTlasRebuild,
+  SnapToGroundCB    onSnapToGround,
+  MaterialUpdateCB  onMaterialUpdate,
+  materials*        materialsPtr,
+  float             keyRepeatDelay,
+  float             keyRepeatRate
+);</code></pre>
+
+  <h3 id="controls">Controls Reference</h3>
+
+  <table>
+    <tr><th>Key</th><th>Action</th></tr>
+    <tr><td><span class="keybind">KP+</span> (hold)</td><td>Add Object submenu: <span class="keybind">C</span>=cube (1×1×1, spawns 2m ahead)</td></tr>
+    <tr><td><span class="keybind">KP*</span> (hold)</td><td>Add Light submenu: <span class="keybind">S</span>=spot, <span class="keybind">A</span>=point</td></tr>
+    <tr><td><span class="keybind">G</span></td><td>Snap selected object to ground (Möller–Trumbore raycast from bottom face)</td></tr>
+    <tr><td><span class="keybind">~</span></td><td>Toggle grab mode (move selected object or whole group)</td></tr>
+    <tr><td><span class="keybind">Alt</span>+<span class="keybind">G</span></td><td>Grab entire group — moves all members together</td></tr>
+    <tr><td><span class="keybind">Alt</span>+<span class="keybind">D</span></td><td>Delete selected object and rebuild GPU buffers</td></tr>
+    <tr><td><span class="keybind">Enter</span></td><td>Select group header — subsequent edits apply to all group members</td></tr>
+    <tr><td><span class="keybind">←</span> <span class="keybind">→</span></td><td>Expand / collapse group in hierarchy</td></tr>
+    <tr><td><span class="keybind">ESC</span></td><td>Cancel current submenu / deselect</td></tr>
+  </table>
+
+  <h3 id="fly">Fly Mode (F4)</h3>
+  <table>
+    <tr><th>Key</th><th>Action</th></tr>
+    <tr><td><span class="keybind">W</span> / <span class="keybind">S</span></td><td>Forward / back along camera front</td></tr>
+    <tr><td><span class="keybind">A</span> / <span class="keybind">D</span></td><td>Strafe left / right</td></tr>
+    <tr><td><span class="keybind">Space</span></td><td>Move up (world Y)</td></tr>
+    <tr><td><span class="keybind">C</span></td><td>Move down (world Y)</td></tr>
+    <tr><td><span class="keybind">Q</span> / <span class="keybind">E</span></td><td>Roll left / right</td></tr>
+    <tr><td><span class="keybind">Shift</span></td><td>2× speed multiplier</td></tr>
+    <tr><td><span class="keybind">F4</span></td><td>Exit fly mode (roll resets to 0)</td></tr>
+  </table>
+
+  <div class="callout callout-purple">
+    Roll is stored in a <code>float roll</code> member. <code>updateCamera()</code> applies <code>glm::rotate</code> around <code>cameraFront</code>. The view matrix in <code>rtx_pipeline.cpp</code> must use <code>cameraUp</code> — not a hardcoded world up — or roll will not reach the GPU.
+  </div>
+
+  <h3 id="console">Console View (F1)</h3>
+
+  <p>F1 opens a full-screen scrollable terminal panel that captures all <code>stdout</code> and <code>stderr</code> into a 500-line ring buffer. Output is ANSI-stripped for storage and re-coloured by line type (normal / success / warning / error). The real terminal still receives the original coloured output simultaneously via a tee streambuf.</p>
+
+  <table>
+    <tr><th>Key</th><th>Action</th></tr>
+    <tr><td><span class="keybind">↑</span> / <span class="keybind">↓</span></td><td>Scroll one line</td></tr>
+    <tr><td><span class="keybind">PgUp</span> / <span class="keybind">PgDn</span></td><td>Scroll half a page</td></tr>
+    <tr><td><span class="keybind">Home</span> / <span class="keybind">End</span></td><td>Jump to top / bottom of buffer</td></tr>
+    <tr><td><span class="keybind">F1</span></td><td>Close console</td></tr>
+  </table>
+
+  <div class="callout callout-purple">
+    <code>ConsoleView::render()</code> writes via <code>origCout_</code> (the pre-redirect streambuf), never through <code>std::cout</code>, eliminating any risk of recursive capture during rendering.
+  </div>
+
+  <h3 id="groups">Object Groups</h3>
+
+  <p>Objects are assigned to named groups via the <code>ra_group</code> node extra or via the editor. The current scene name is displayed at the bottom-left border of the hierarchy panel — it turns red when there are unsaved changes. Press <span class="keybind">Enter</span> on a group header to select the whole group; subsequent property edits apply to all members. <span class="keybind">Alt</span>+<span class="keybind">G</span> grabs the whole group for movement.</p>
+
+  <div class="callout callout-cyan">
+    <strong>GLFW Character Input Note:</strong> <code>glfwSetCharCallback</code> does not fire when <code>GLFW_CURSOR_DISABLED</code> is active. All text input uses <code>keyCallback</code>-based <code>keyToChar()</code> translation instead.
+  </div>
+</section>
+
+<!-- BUILD -->
+<section class="doc-section" id="build">
+  <h2><span class="accent">09.</span> Build System</h2>
+
+  <h3>go.sh Flags</h3>
+  <table>
+    <tr><th>Flag</th><th>Effect</th></tr>
+    <tr><td>--skip-compile</td><td>Skip C++ recompile, use existing binary</td></tr>
+    <tr><td>--no-mango</td><td>Disable MangoHUD overlay (always required)</td></tr>
+    <tr><td>--play</td><td>Interactive scene picker. Pre-selects last used scene — press Enter to reuse. <code>scenes/_archive/</code> excluded from list.</td></tr>
+    <tr><td>--fullscreen</td><td>Session-only fullscreen. Temporarily sets <code>start_fullscreen = true</code> in <code>ra_engine.conf</code>, restores original value on exit.</td></tr>
+    <tr><td>--clean</td><td>Full recompile from scratch (calls make clean)</td></tr>
+    <tr><td>--validate</td><td>Enable Vulkan validation layers</td></tr>
+  </table>
+
+  <p>Scene file path is the final positional argument — writing it to disk updates <code>.last_scene</code> for the next session. Without a positional argument, <code>go.sh</code> loads the scene from <code>.last_scene</code>, falling back to <code>material_showcase_v2.gltf</code> on first run.</p>
+
+  <h3 id="compile">Incremental Builds</h3>
+  <p>The Makefile uses <code>-MMD -MP</code> for dependency tracking. Without <code>--clean</code>, only changed translation units recompile. Shader compilation is always a separate step via <code>compile_shaders.sh</code> — the build system does not auto-detect shader changes.</p>
+
+  <pre data-label="bash"><code><span class="cm"># Typical dev workflow</span>
+./compile_shaders.sh          <span class="cm"># after shader edit</span>
+./go.sh --skip-compile --no-mango scenes/myscene.gltf
+
+<span class="cm"># After C++ changes</span>
+./go.sh --no-mango scenes/myscene.gltf
+
+<span class="cm"># Debug run with Vulkan validation</span>
+./go.sh --no-mango --validate scenes/myscene.gltf</code></pre>
+</section>
+
+<!-- CONSTRAINTS -->
+<section class="doc-section" id="constraints">
+  <h2><span class="accent">10.</span> Platform Notes</h2>
+
+  <h3>AMD (RADV driver)</h3>
+  <div class="callout callout-orange">
+    <strong>primitiveOffset is silently ignored on RADV.</strong> Use dedicated per-object HOST_VISIBLE index buffers with <code>primitiveOffset=0</code> instead of relying on the offset parameter.
+  </div>
+
+  <h3>Linux / X11 + GLFW</h3>
+  <p><code>glfwSetCharCallback</code> does not fire when <code>GLFW_CURSOR_DISABLED</code> is active (X11 limitation). Use <code>keyCallback</code>-based <code>keyToChar()</code> translation for all text input that may occur while the cursor is locked.</p>
+
+  <h3>MangoHUD</h3>
+  <p>MangoHUD causes segfaults during Vulkan teardown when running against Ra Engine. Always pass <code>--no-mango</code>. Do not attempt to use MangoHUD for performance monitoring with this engine — use Vulkan timestamp queries or <code>VK_EXT_debug_utils</code> markers instead.</p>
+</section>
+
+<!-- PITFALLS -->
+<section class="doc-section" id="pitfalls">
+  <h2><span class="accent">11.</span> Critical Pitfalls</h2>
+
+  <table>
+    <tr><th>Pitfall</th><th>Symptom</th><th>Fix</th></tr>
+    <tr><td>gl_ObjectToWorldEXT in shaders</td><td>Not needed — would be identity</td><td>Vertex positions are world-space baked. Do not use; not referenced in any active shader.</td></tr>
+    <tr><td>SceneObject registered after buildAllBLASes()</td><td>Object missing from TLAS</td><td>Register every SceneObject before calling buildAllBLASes().</td></tr>
+    <tr><td>CameraUBO field mismatch</td><td>Silent wrong values in shaders</td><td>Keep struct field order identical in all .rgen/.rchit and C++ header.</td></tr>
+    <tr><td>Light node in node.extensions map</td><td>Lights not loading</td><td>Use node.light integer field in TinyGLTF. Raw JSON uses KHR_lights_punctual.light.</td></tr>
+    <tr><td>GLFW char callback with locked cursor</td><td>Text input silently drops</td><td>Use keyToChar() in keyCallback instead.</td></tr>
+    <tr><td>GGX roughness = 0</td><td>NaN in GI / reflection output</td><td>Clamp alpha to max(roughness², 1e-4).</td></tr>
+    <tr><td>Moving objects via delta (no snapshot)</td><td>Float drift over many moves</td><td>Always move from originalVertices snapshot + new position.</td></tr>
+    <tr><td>RADV primitiveOffset</td><td>Wrong geometry indexed</td><td>Use primitiveOffset=0 with per-object index buffers.</td></tr>
+  </table>
+</section>
+
+<!-- LUA SCRIPTING -->
+<section class="doc-section" id="lua">
+  <h2><span class="accent">12.</span> Lua Scripting</h2>
+
+  <p>Ra Engine drives game logic through Lua scripts. Drop a <code>.lua</code> file in <code>scripts/</code> and the full engine API is available as the global table <code>engine</code>. No recompile needed — scripts hot-reload live on save.</p>
+
+  <h3>Script Contract</h3>
+  <p>Every script must define three global functions the engine calls automatically:</p>
+
+  <table>
+    <tr><th>Function</th><th>When called</th></tr>
+    <tr><td>function init()</td><td>Once on load and again after every hot-reload. Re-discover object IDs here.</td></tr>
+    <tr><td>function update(dt)</td><td>Every frame before rendering. <code>dt</code> = delta seconds.</td></tr>
+    <tr><td>function shutdown()</td><td>On engine exit. Write persistent state via <code>engine.set_var()</code>.</td></tr>
+    <tr><td>function get_status_line()</td><td>Optional. Return a short string for the terminal status footer.</td></tr>
+  </table>
+
+  <h3>Hot-Reload</h3>
+  <p>The engine <code>stat()</code>s the script file every frame. On mtime change it tears down the Lua state, reopens it, and calls <code>init()</code> again. <strong>Lua variables do not survive hot-reload</strong> — persist anything important with <code>engine.set_var()</code>, which lives in C++ and is unaffected by Lua restarts.</p>
+
+  <h3>Quick Example</h3>
+  <pre data-label="lua"><code><span class="kw">local</span> goal_id = <span class="nm">0</span>
+<span class="kw">local</span> score   = <span class="nm">0.0</span>
+
+<span class="kw">function</span> <span class="fn">init</span>()
+    goal_id = <span class="fn">engine.find_object</span>(<span class="st">"goal_pad"</span>)
+    score   = <span class="fn">engine.get_var</span>(<span class="st">"game.score"</span>, <span class="nm">0.0</span>)
+<span class="kw">end</span>
+
+<span class="kw">function</span> <span class="fn">update</span>(dt)
+    <span class="kw">local</span> _, y, _ = <span class="fn">engine.get_camera_position</span>()
+    score = y * <span class="nm">100.0</span>
+    <span class="fn">engine.set_hud_data</span>(score, y)
+
+    <span class="kw">if</span> goal_id ~= <span class="nm">0</span> <span class="kw">and</span> <span class="fn">engine.player_overlaps_object</span>(goal_id) <span class="kw">then</span>
+        <span class="fn">engine.print_status</span>(<span class="st">"★ LEVEL COMPLETE!"</span>)
+    <span class="kw">end</span>
+<span class="kw">end</span>
+
+<span class="kw">function</span> <span class="fn">shutdown</span>()
+    <span class="fn">engine.set_var</span>(<span class="st">"game.score"</span>, score)
+<span class="kw">end</span></code></pre>
+
+  <div class="callout callout-cyan">
+    <strong>Full API reference →</strong> <a href="lua-api.html">digiflux.one/docs/lua-api</a> — all 30 engine functions documented with signatures, parameters, and examples.
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="doc-section" id="products">
+  <h2><span class="accent">13.</span> Built with Ra Engine</h2>
+
+  <div class="card-grid" style="max-width: 320px;">
+    <div class="card">
+      <div class="card-icon">↑</div>
+      <h4>Launch Up</h4>
+      <p>Vertical FPS platformer. Height-based scoring, 100 pts/metre. Steam page live. Launch title. Jump gravity −18.0, coyote time 0.15s.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <p>Ra Engine is sold at <strong>$49.99/seat</strong> on Steam through <strong>digiflux.one</strong>. Games built with Ra Engine are cross-promoted through the digiflux.one pipeline. <em>Launch Up</em> on Steam is built with Ra Engine.</p>
+
+  <div class="callout callout-purple">
+    <strong>Revenue share:</strong> 2% annually over $100K, 1% annually over $1M. Resets each year. Terms are permanent.
+  </div>
+</section>
+
+</main>
 </div>
 
-<!-- FOOTER -->
 <footer>
-  <div>DIGIFLUX<span>.ONE</span> · ∮ Flux Studios · Color It Company LLC</div>
-  <div>Ra Engine $49.99/seat · 2% over $100K · 1% over $1M · Annual reset · Terms permanent</div>
+  <span class="footer-logo">digiflux.one</span>
+  <a href="https://digiflux.one">digiflux.one</a>
+  <a href="https://digiflux.one/docs">docs</a>
+  <a href="lua-api.html">lua api</a>
+  <span>Ra Engine &copy; 2025 Color It Company LLC — Flux Studios ∮</span>
 </footer>
 
 <script>
-  new Chart(document.getElementById('pricingChart'), {
-    type: 'bar',
-    data: {
-      labels: ['$250K', '$500K', '$1M', '$2M', '$5M'],
-      datasets: [
-        { label: 'Ra Engine (annual)', data: [3000, 8000, 18000, 28000, 58000], backgroundColor: '#E8008C', borderRadius: 3 },
-        { label: 'Unreal Engine (lifetime)', data: [0, 0, 0, 50000, 200000], backgroundColor: '#3A3A4A', borderRadius: 3 },
-        { label: 'Godot / Unity / GameMaker', data: [0, 0, 0, 0, 0], backgroundColor: '#1E1E2A', borderRadius: 3 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#0E0E18',
-          borderColor: 'rgba(232,0,140,0.3)', borderWidth: 1,
-          titleColor: '#F0EEF8', bodyColor: '#8884AA',
-          callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: '#4A4870', font: { size: 11, family: "'DM Mono', monospace" } },
-          grid: { display: false },
-          border: { color: 'rgba(255,255,255,0.06)' },
-          title: { display: true, text: 'Annual gross revenue', color: '#4A4870', font: { size: 10, family: "'DM Mono', monospace" } }
-        },
-        y: {
-          ticks: { color: '#4A4870', font: { size: 10, family: "'DM Mono', monospace" }, callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0) + 'K' : v) },
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          border: { color: 'rgba(255,255,255,0.06)' },
-          title: { display: true, text: 'Royalties owed', color: '#4A4870', font: { size: 10, family: "'DM Mono', monospace" } }
-        }
-      }
+
+const hamburger = document.getElementById('hamburger');
+const navMenu = document.querySelector('nav');
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('active');
+  navMenu.classList.toggle('active');
+});
+// Close menu when a nav item is clicked
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    hamburger.classList.remove('active');
+    navMenu.classList.remove('active');
+  });
+});
+
+const progress = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  progress.style.width = Math.min(pct, 100) + '%';
+});
+
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.doc-section');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const active = document.querySelector('.nav-item[href="#' + e.target.id + '"]');
+      if (active) active.classList.add('active');
     }
   });
-</script>
+}, { rootMargin: '-20% 0px -60% 0px' });
 
-<script>
-  const hamburger = document.getElementById('hamburger');
-  const navLinks = document.getElementById('navLinks');
-  
-  hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navLinks.classList.toggle('active');
+sections.forEach(s => observer.observe(s));
+
+navItems.forEach(item => {
+  item.addEventListener('click', e => {
+    navItems.forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
   });
-  
-  // Close menu when a link is clicked
-  navLinks.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      hamburger.classList.remove('active');
-      navLinks.classList.remove('active');
-    });
-  });
+});
 </script>
 </body>
 </html>
