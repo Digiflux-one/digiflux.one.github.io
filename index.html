@@ -70,6 +70,24 @@
     transition: opacity 0.2s;
   }
   .nav-cta:hover { opacity: 0.85; color: #fff; }
+  /* ── HAMBURGER ── */
+  .hamburger {
+    display: none; flex-direction: column; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 0;
+  }
+  .hamburger span {
+    width: 24px; height: 2px; background: var(--text-muted);
+    transition: all 0.3s; border-radius: 2px;
+  }
+  .hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+  }
+  .hamburger.active span:nth-child(2) {
+    opacity: 0;
+  }
+  .hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+  }
 
   /* ── HERO ── */
   .hero {
@@ -482,6 +500,38 @@
     .compare-table td, .compare-table th { padding: 10px 12px; }
     footer { padding: 2rem 1.25rem; flex-direction: column; align-items: flex-start; }
   }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    nav {
+      padding: 1.5rem 1.25rem;
+    }
+    .nav-logo { font-size: 16px; }
+    .nav-logo .sub { font-size: 10px; }
+    .hamburger {
+      display: flex;
+    }
+    .nav-links {
+      position: absolute; top: 60px; left: 0; right: 0;
+      flex-direction: column; gap: 0; background: var(--bg);
+      border-bottom: 0.5px solid var(--border-subtle);
+      max-height: 0; overflow: hidden; transition: max-height 0.3s;
+    }
+    .nav-links.active {
+      max-height: 400px;
+    }
+    .nav-links a {
+      padding: 1rem 1.25rem; border-bottom: 0.5px solid var(--border-subtle);
+      font-size: 14px;
+    }
+    .nav-links a:last-child {
+      border-bottom: none;
+    }
+    .nav-cta {
+      width: 100%; text-align: center; padding: 1.25rem;
+      border: none; background: var(--bg2);
+    }
+  }
 </style>
 </head>
 <body>
@@ -492,7 +542,12 @@
     DIGIFLUX<span class="dot">.ONE</span>
     <span class="sub">∮ FLUX STUDIOS</span>
   </div>
-  <div class="nav-links">
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
     <a href="#pipeline">Pipeline</a>
     <a href="#ra-engine">Ra Engine</a>
     <a href="#pricing">Pricing</a>
@@ -895,6 +950,24 @@
         }
       }
     }
+  });
+</script>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
+  
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navLinks.classList.toggle('active');
+  });
+  
+  // Close menu when a link is clicked
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('active');
+      navLinks.classList.remove('active');
+    });
   });
 </script>
 </body>
