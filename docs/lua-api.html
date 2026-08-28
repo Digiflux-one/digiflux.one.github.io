@@ -472,6 +472,10 @@ footer a:hover { color: var(--orange); }
     <div class="nav-label">Reference</div>
     <a class="nav-item" href="#key-constants">Key Constants</a>
     <a class="nav-item" href="#example">Full Example</a>
+    <a class="nav-item" href="#raycast">Ray Casting</a>
+    <a class="nav-item" href="#tagging">Tagged Objects</a>
+    <a class="nav-item" href="#gameobjects">Game Objects</a>
+    <a class="nav-item" href="#ambient">Ambient Sky</a>
     <a class="nav-item" href="#quickref">Quick Reference</a>
   </div>
 </nav>
@@ -1141,7 +1145,7 @@ spinner_angle = (spinner_angle + <span class="nm">45.0</span> * dt) % <span clas
 
 <!-- FULL EXAMPLE -->
 <section class="doc-section" id="example">
-  <h2><span class="accent">15.</span> Full Example — launch_up.lua Patterns</h2>
+  <h2><span class="accent">19a.</span> Full Example — launch_up.lua Patterns</h2>
   <p>Annotated excerpts from the real <code>scripts/launch_up.lua</code> showing the most important patterns.</p>
 
   <h3>init() — bulk object discovery + scale reset</h3>
@@ -1224,9 +1228,147 @@ cp_scale_timers[i] = <span class="nm">0.5</span>   <span class="cm">-- 0.5s pop<
 <span class="fn">engine.set_object_scale</span>(glow_id, pop_sc)</code></pre>
 </section>
 
+<!-- RAY CASTING -->
+<section class="doc-section" id="raycast">
+  <h2><span class="accent">15.</span> Ray Casting</h2>
+  <p>Cast a ray from any world-space origin in any direction and receive the closest geometry hit. Useful for hitscan weapons, line-of-sight checks, and proximity triggers.</p>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <code class="api-sig">engine.cast_ray(ox, oy, oz, dx, dy, dz, maxDist, excludeId) → hit, id, px, py, pz, nx, ny, nz, dist</code>
+      <span class="api-tag">Returns 9 values</span>
+    </div>
+    <div class="api-block-body">
+      <p>Casts a ray from <code>(ox,oy,oz)</code> in direction <code>(dx,dy,dz)</code> (need not be normalised). Returns up to 9 values: <code>hit</code> (bool), <code>id</code> (object id, 0 if miss), hit point <code>px,py,pz</code>, surface normal <code>nx,ny,nz</code>, and <code>dist</code> (float, distance from origin). Pass <code>excludeId</code> to skip an object — typically the shooter's own id to avoid self-intersection. Pass 0 for no exclusion.</p>
+      <pre data-label="lua"><code>local hit, id, px, py, pz, nx, ny, nz, dist =
+  engine.cast_ray(cx, cy, cz, fx, fy, fz, 200.0, 0)
+if hit then
+  print("Hit object " .. id .. " at dist " .. dist)
+end</code></pre>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <code class="api-sig">engine.get_object_rest_center(id) → x, y, z</code>
+      <span class="api-tag">Returns 3 floats</span>
+    </div>
+    <div class="api-block-body">
+      <p>Returns the load-time centroid of an object — the mean of <code>originalVertices</code> over the object's vertex range. Immutable for the lifetime of the scene. This is the exact pivot used by <code>applyAllObjectTransforms()</code>, so a script that subtracts it before calling <code>set_object_position</code> lands the object exactly where intended and stays consistent across hot-reloads.</p>
+      <pre data-label="lua"><code>local cx, cy, cz = engine.get_object_rest_center(id)
+-- place object so its centroid sits at target pos
+engine.set_object_position(id, tx - cx, ty - cy, tz - cz)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- TAGGED MESH OBJECTS -->
+<section class="doc-section" id="tagging">
+  <h2><span class="accent">16.</span> Tagged Mesh Objects</h2>
+  <p>Any SceneObject can carry a gameplay tag and a float property bag, authored via <code>extras["ra_tag"]</code> and <code>extras["ra_props"]</code> in the GLTF, or set at runtime. Tags identify roles — <code>"target"</code>, <code>"pickup"</code>, <code>"door"</code>. Props hold per-instance state — health, points, cooldown timers.</p>
+
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.get_object_tag(id) → string</code></div>
+    <div class="api-block-body"><p>Returns the tag string for a mesh object. Empty string if untagged.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.set_object_tag(id, tag)</code></div>
+    <div class="api-block-body"><p>Sets the tag on a mesh object at runtime.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header">
+      <code class="api-sig">engine.find_objects_by_tag(tag) → table of ids</code>
+      <span class="api-tag">Returns table</span>
+    </div>
+    <div class="api-block-body">
+      <p>Finds all scene objects whose tag matches exactly. Returns an array of IDs (1-indexed, empty if none).</p>
+      <pre data-label="lua"><code>local targets = engine.find_objects_by_tag("target")
+for _, id in ipairs(targets) do
+  local hp = engine.get_object_prop(id, "health", 100.0)
+  print("Target " .. id .. " has " .. hp .. " HP")
+end</code></pre>
+    </div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.get_object_prop(id, key, default) → float</code></div>
+    <div class="api-block-body"><p>Reads a named float property from an object's props map. Returns <code>default</code> if the key does not exist.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.set_object_prop(id, key, value)</code></div>
+    <div class="api-block-body"><p>Writes a named float property. The props map grows dynamically — any string key is valid.</p></div>
+  </div>
+</section>
+
+<!-- GAME OBJECTS (STANDALONE) -->
+<section class="doc-section" id="gameobjects">
+  <h2><span class="accent">17.</span> Standalone Game Objects</h2>
+  <p>Mesh-less entities: spawn points, waypoints, patrol nodes, invisible triggers. Loaded from GLTF nodes that carry <code>extras["ra_type"]="game_object"</code>. IDs live in a separate space from SceneObject IDs — do not mix them.</p>
+
+  <div class="callout callout-purple">
+    Tagged mesh objects (SceneObject::tag != "") and standalone game objects (GameObject) are both accessible from Lua as "game objects", but through different API calls. Mesh objects use <code>find_object</code>/<code>find_objects_by_tag</code>; standalone entities use <code>find_game_object</code>/<code>find_game_objects_by_tag</code>.
+  </div>
+
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.find_game_object(name) → id</code></div>
+    <div class="api-block-body"><p>Finds a standalone game object by GLTF node name. Returns 0 if not found.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.find_game_objects_by_tag(tag) → table of ids</code></div>
+    <div class="api-block-body"><p>Returns IDs of all standalone game objects (active and inactive) with the given tag.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.get_game_object_position(id) → x, y, z</code></div>
+    <div class="api-block-body"><p>World-space position of a standalone game object.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.set_game_object_position(id, x, y, z)</code></div>
+    <div class="api-block-body"><p>Moves a standalone game object. Affects only the CPU-side position — game objects have no geometry or BLAS.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.get_game_object_tag(id) → string</code></div>
+    <div class="api-block-body"><p>Returns the tag of a standalone game object.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.is_game_object_active(id) → bool</code></div>
+    <div class="api-block-body"><p>Returns true if the game object is active. Inactive objects can be treated as disabled/consumed.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.set_game_object_active(id, bool)</code></div>
+    <div class="api-block-body"><p>Activates or deactivates a standalone game object.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.get_game_object_prop(id, key, default) → float</code></div>
+    <div class="api-block-body"><p>Reads a named float property from a standalone game object.</p></div>
+  </div>
+  <div class="api-block">
+    <div class="api-block-header"><code class="api-sig">engine.set_game_object_prop(id, key, value)</code></div>
+    <div class="api-block-body"><p>Writes a named float property to a standalone game object.</p></div>
+  </div>
+</section>
+
+<!-- AMBIENT SKY -->
+<section class="doc-section" id="ambient">
+  <h2><span class="accent">18.</span> Ambient Sky Color</h2>
+  <p>Set the background and GI ambient contribution color from Lua. Takes effect immediately on the next frame (UBO upload). Two colors are blended in the miss shader: top (sky zenith) and horizon (ground/sides).</p>
+
+  <div class="api-block">
+    <div class="api-block-header">
+      <code class="api-sig">engine.set_ambient_color(topR, topG, topB, horizonR, horizonG, horizonB)</code>
+    </div>
+    <div class="api-block-body">
+      <p>All values are linear RGB, 0–1. Written to the six <code>ambientSky*</code> UBO tail fields and read by <code>miss.rmiss</code>. No TLAS rebuild needed.</p>
+      <pre data-label="lua"><code>-- Deep purple night sky
+engine.set_ambient_color(0.02, 0.00, 0.08,  0.08, 0.04, 0.12)
+
+-- Warm orange sunset horizon
+engine.set_ambient_color(0.3, 0.5, 0.9,  0.9, 0.4, 0.1)</code></pre>
+    </div>
+  </div>
+</section>
+
 <!-- QUICK REF -->
 <section class="doc-section" id="quickref">
-  <h2>Quick Reference</h2>
+  <h2><span class="accent">19.</span> Quick Reference — All 48 Functions</h2>
   <table>
     <tr><th>Function</th><th>Returns</th><th>Description</th></tr>
     <tr><td>engine.get_camera_position()</td><td>x, y, z</td><td>Player world position</td></tr>
@@ -1261,7 +1403,29 @@ cp_scale_timers[i] = <span class="nm">0.5</span>   <span class="cm">-- 0.5s pop<
     <tr><td>engine.get_var(key, default)</td><td>float</td><td>Read persisted float</td></tr>
     <tr><td>engine.print_status(text)</td><td>—</td><td>Terminal status line (captured by F1 console)</td></tr>
     <tr><td>engine.set_hud_data(score, height)</td><td>—</td><td>Update in-viewport HUD</td></tr>
+    <tr><td colspan="3" style="background:var(--bg3);color:var(--text3);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px">Ray Casting &amp; Object Queries</td></tr>
+    <tr><td>engine.cast_ray(ox,oy,oz, dx,dy,dz, maxDist, excludeId)</td><td>hit, id, px,py,pz, nx,ny,nz, dist</td><td>Hitscan / line-of-sight</td></tr>
+    <tr><td>engine.get_object_rest_center(id)</td><td>x, y, z</td><td>Immutable load-time centroid (pivot for transforms)</td></tr>
+    <tr><td colspan="3" style="background:var(--bg3);color:var(--text3);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px">Tagged Mesh Objects</td></tr>
+    <tr><td>engine.get_object_tag(id)</td><td>string</td><td>Tag of a mesh object</td></tr>
+    <tr><td>engine.set_object_tag(id, tag)</td><td>—</td><td>Set tag at runtime</td></tr>
+    <tr><td>engine.find_objects_by_tag(tag)</td><td>table of ids</td><td>All mesh objects with matching tag</td></tr>
+    <tr><td>engine.get_object_prop(id, key, default)</td><td>float</td><td>Per-instance float property</td></tr>
+    <tr><td>engine.set_object_prop(id, key, value)</td><td>—</td><td>Write per-instance float property</td></tr>
+    <tr><td colspan="3" style="background:var(--bg3);color:var(--text3);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px">Standalone Game Objects</td></tr>
+    <tr><td>engine.find_game_object(name)</td><td>id</td><td>Standalone entity by name</td></tr>
+    <tr><td>engine.find_game_objects_by_tag(tag)</td><td>table of ids</td><td>All standalone entities with tag</td></tr>
+    <tr><td>engine.get_game_object_position(id)</td><td>x, y, z</td><td>Entity world position</td></tr>
+    <tr><td>engine.set_game_object_position(id,x,y,z)</td><td>—</td><td>Move entity</td></tr>
+    <tr><td>engine.get_game_object_tag(id)</td><td>string</td><td>Entity tag</td></tr>
+    <tr><td>engine.is_game_object_active(id)</td><td>bool</td><td>Active state</td></tr>
+    <tr><td>engine.set_game_object_active(id, bool)</td><td>—</td><td>Activate / deactivate entity</td></tr>
+    <tr><td>engine.get_game_object_prop(id, key, default)</td><td>float</td><td>Entity float property</td></tr>
+    <tr><td>engine.set_game_object_prop(id, key, value)</td><td>—</td><td>Write entity float property</td></tr>
+    <tr><td colspan="3" style="background:var(--bg3);color:var(--text3);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px">Ambient Sky</td></tr>
+    <tr><td>engine.set_ambient_color(tR,tG,tB, hR,hG,hB)</td><td>—</td><td>Sky top + horizon color (linear RGB 0–1)</td></tr>
   </table>
+  <p style="color:var(--text3);font-size:12px;margin-top:1rem">Total: <strong>48 functions</strong></p>
 </section>
 
 </main>
