@@ -31,6 +31,11 @@ header.legal-header {
   padding-bottom: 1.25rem;
   margin-bottom: 2rem;
 }
+header.legal-header .brand a {
+  color: var(--accent, #7dd3fc);
+  text-decoration: none;
+}
+header.legal-header .brand a:hover { text-decoration: underline; }
 header.legal-header .brand {
   font-size: 0.85rem;
   letter-spacing: 0.06em;
