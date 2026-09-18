@@ -727,7 +727,7 @@ footer a:hover { color: var(--orange); }
   <div class="header-right">
     <span class="badge badge-orange">Vulkan 1.4</span>
     <span class="badge badge-cyan">RTX Hardware</span>
-    <span class="badge">$49.99/seat</span>
+    <span class="badge">$250/seat</span>
   </div>
 </header>
 
@@ -956,10 +956,16 @@ std::vector&lt;PerObjectBLAS&gt; objectBLASes;</code></pre>
     <div class="ubo-field"><span class="ubo-field-name">hudHeight</span><span class="ubo-field-type">float</span></div>
     <div class="ubo-field"><span class="ubo-field-name">reachIndicatorEnabled</span><span class="ubo-field-type">int</span></div>
     <div class="ubo-field"><span class="ubo-field-name">reachIndicatorNorm</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field" style="border-color:var(--purple)"><span class="ubo-field-name">ambientSkyTopR</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field" style="border-color:var(--purple)"><span class="ubo-field-name">ambientSkyTopG</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field" style="border-color:var(--purple)"><span class="ubo-field-name">ambientSkyTopB</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field" style="border-color:var(--purple)"><span class="ubo-field-name">ambientSkyHorizonR</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field" style="border-color:var(--purple)"><span class="ubo-field-name">ambientSkyHorizonG</span><span class="ubo-field-type">float</span></div>
+    <div class="ubo-field" style="border-color:var(--purple)"><span class="ubo-field-name">ambientSkyHorizonB</span><span class="ubo-field-type">float</span></div>
   </div>
 
   <div class="callout callout-cyan">
-    Any mismatch in field order between shaders and the C++ <code>CameraUBO</code> struct will cause silent data corruption — wrong settings reaching the GPU with no validation error. Total: <strong>24 fields</strong>. <code>reachIndicatorEnabled</code> and <code>reachIndicatorNorm</code> are declared in <code>closesthit.rchit</code> for layout sync only — they are only consumed in <code>raygen.rgen</code>.
+    Any mismatch in field order between shaders and the C++ <code>CameraUBO</code> struct will cause silent data corruption — wrong settings reaching the GPU with no validation error. Total: <strong>30 fields</strong>. <code>reachIndicatorEnabled</code> and <code>reachIndicatorNorm</code> are declared in <code>closesthit.rchit</code> for layout sync only — they are only consumed in <code>raygen.rgen</code>. The six <code>ambientSky*</code> tail fields (purple) are read by <code>miss.rmiss</code> for background and GI ambient. Individual floats avoid std140 vec3 padding misalignment.
   </div>
 </section>
 
@@ -1056,7 +1062,9 @@ std::vector&lt;PerObjectBLAS&gt; objectBLASes;</code></pre>
     <tr><td><span class="keybind">F1</span></td><td>Console View — scrollable stdout/stderr capture panel</td></tr>
     <tr><td><span class="keybind">F2</span></td><td>Video settings (ACES, Gamma, GI samples, fog, reflections...)</td></tr>
     <tr><td><span class="keybind">F3</span></td><td>Scene hierarchy view</td></tr>
-    <tr><td><span class="keybind">F4</span></td><td>Fly mode toggle</td></tr>
+    <tr><td><span class="keybind">F4</span></td><td>Fly mode toggle (physics suspended, free 6DOF camera)</td></tr>
+    <tr><td><span class="keybind">F5</span></td><td>Hot-reload scene — reloads GLTF from disk without restart</td></tr>
+    <tr><td><span class="keybind">F6</span></td><td>Toggle light helper gizmos — sphere (point) and cone (spot/directional) overlays; RAY_MASK_HELPER so they cast no shadow and don't appear in reflections/GI</td></tr>
   </table>
 
   <h3 id="hierarchy">Hierarchy View (F3)</h3>
@@ -1082,15 +1090,21 @@ std::vector&lt;PerObjectBLAS&gt; objectBLASes;</code></pre>
 
   <table>
     <tr><th>Key</th><th>Action</th></tr>
-    <tr><td><span class="keybind">KP+</span> (hold)</td><td>Add Object submenu: <span class="keybind">C</span>=cube (1×1×1, spawns 2m ahead)</td></tr>
-    <tr><td><span class="keybind">KP*</span> (hold)</td><td>Add Light submenu: <span class="keybind">S</span>=spot, <span class="keybind">A</span>=point</td></tr>
+    <tr><td><span class="keybind">KP+</span> or <span class="keybind">=</span> (hold)</td><td>Add Object submenu: <span class="keybind">C</span>=cube (1×1×1, spawns 2m ahead)</td></tr>
+    <tr><td><span class="keybind">KP*</span> or <span class="keybind">Shift+8</span> (hold)</td><td>Add Light submenu: <span class="keybind">S</span>=spot, <span class="keybind">A</span>=point</td></tr>
     <tr><td><span class="keybind">G</span></td><td>Snap selected object to ground (Möller–Trumbore raycast from bottom face)</td></tr>
     <tr><td><span class="keybind">~</span></td><td>Toggle grab mode (move selected object or whole group)</td></tr>
     <tr><td><span class="keybind">Alt</span>+<span class="keybind">G</span></td><td>Grab entire group — moves all members together</td></tr>
     <tr><td><span class="keybind">Alt</span>+<span class="keybind">D</span></td><td>Delete selected object and rebuild GPU buffers</td></tr>
+    <tr><td><span class="keybind">Alt</span>+<span class="keybind">C</span></td><td>Toggle collision on selected object or group (<code>collides</code> field; <code>[no-col]</code> indicator shown in hierarchy; round-trips via <code>ra_collision</code> GLTF extra)</td></tr>
+    <tr><td><span class="keybind">Ctrl</span>+<span class="keybind">D</span></td><td>Duplicate selected object — copies geometry + original vertices; auto-selected; buffers dynamically resized</td></tr>
+    <tr><td><span class="keybind">Ctrl</span>+<span class="keybind">Z</span></td><td>Undo last delete — 25-slot deque; restores geometry + material + light data</td></tr>
+    <tr><td><span class="keybind">Ctrl</span>+<span class="keybind">S</span></td><td>Save scene to GLTF</td></tr>
     <tr><td><span class="keybind">Enter</span></td><td>Select group header — subsequent edits apply to all group members</td></tr>
-    <tr><td><span class="keybind">←</span> <span class="keybind">→</span></td><td>Expand / collapse group in hierarchy</td></tr>
-    <tr><td><span class="keybind">ESC</span></td><td>Cancel current submenu / deselect</td></tr>
+    <tr><td><span class="keybind">TAB</span></td><td>Cycle property edit mode (Position → Rotation → Scale → Roughness → Emissive...)</td></tr>
+    <tr><td><span class="keybind">←</span> <span class="keybind">→</span></td><td>Cycle property backwards/forwards; also used to expand/collapse group in hierarchy</td></tr>
+    <tr><td><span class="keybind">1</span>–<span class="keybind">0</span></td><td>Direct property selection by digit (up to 10 properties per object type)</td></tr>
+    <tr><td><span class="keybind">ESC</span></td><td>Cancel current submenu / exit — triggers save-confirmation dialog if unsaved changes</td></tr>
   </table>
 
   <h3 id="fly">Fly Mode (F4)</h3>
@@ -1132,6 +1146,23 @@ std::vector&lt;PerObjectBLAS&gt; objectBLASes;</code></pre>
   <div class="callout callout-cyan">
     <strong>GLFW Character Input Note:</strong> <code>glfwSetCharCallback</code> does not fire when <code>GLFW_CURSOR_DISABLED</code> is active. All text input uses <code>keyCallback</code>-based <code>keyToChar()</code> translation instead.
   </div>
+
+  <h3 id="new-systems">New Engine Systems (Aug 2026)</h3>
+
+  <table>
+    <tr><th>System</th><th>Details</th></tr>
+    <tr><td><strong>Moving Platform Support (#696)</strong></td><td>Player anchors to the object it stands on. <code>groundObjectId</code> + <code>groundObjectAnchor</code> track the supporting object each frame via <code>setGroundSupport()</code>. Delta applied before physics so the platform never slides out from under the player a frame late.</td></tr>
+    <tr><td><strong>Undo Stack (Ctrl+Z)</strong></td><td>25-slot <code>std::deque&lt;DeletedObjectSnapshot&gt;</code>. Supports both geometry objects and lights. Pushed on <code>deleteObject()</code> and <code>deleteLight()</code>; popped by <code>undeleteObject()</code>.</td></tr>
+    <tr><td><strong>Light Helper Gizmos (#679/#680)</strong></td><td>Sphere (point) and cone (spot/directional) meshes generated at scene build from <code>lights[]</code>. Tagged <code>RAY_MASK_HELPER</code> in the TLAS — cast no shadows, invisible in reflections/GI. Toggled via F6. <code>syncLightHelper(lightIndex)</code> repositions a helper after its light moves.</td></tr>
+    <tr><td><strong>Third-Person Camera</strong></td><td><span class="keybind">V</span> toggles <code>thirdPersonMode</code>. Scroll wheel adjusts <code>thirdPersonDistance</code> (1.5–15 m). A procedural capsule mesh (<code>capsuleObjectId</code>) is positioned behind the camera each frame via <code>updatePlayerCapsule()</code>.</td></tr>
+    <tr><td><strong>Per-Object Collision (#678)</strong></td><td><code>SceneObject::collides</code> (default true, sparse on disk). Toggle via <span class="keybind">Alt+C</span>. <code>[no-col]</code> indicator in hierarchy. Round-trips through <code>ra_collision</code> GLTF extra.</td></tr>
+    <tr><td><strong>Exit Confirmation (#675)</strong></td><td>ESC with unsaved changes raises a S/D/ESC modal via <code>requestExit()</code>. <code>exitConfirmArmed</code> ignores the ESC that raised it. <code>quitNow()</code> is the unconditional close callback.</td></tr>
+    <tr><td><strong>Horizontal Collision (#671)</strong></td><td><code>resolveHorizontalMovement()</code> + <code>collidesHorizontally()</code>. Casts lateral rays against actual mesh triangles (not object AABBs) — correct for merged mesh scenes where per-object bounds span empty gaps.</td></tr>
+    <tr><td><strong>Ray Visibility Masks</strong></td><td><code>RAY_MASK_GEOMETRY 0x01</code>, <code>RAY_MASK_HELPER 0x02</code>. Written into <code>VkAccelerationStructureInstanceKHR::mask</code> at TLAS build; passed as <code>cullMask</code> to <code>traceRayEXT</code> so secondary rays skip helper gizmos in hardware.</td></tr>
+    <tr><td><strong>Game Object System</strong></td><td>Mesh-less entities (<code>GameObject</code>) loaded from GLTF nodes with <code>extras["ra_type"]="game_object"</code>. Separate ID space from SceneObjects. Exposed to Lua via <code>find_game_object</code>, <code>get/set_game_object_position</code>, etc.</td></tr>
+    <tr><td><strong>Tagged Mesh Objects</strong></td><td><code>SceneObject::tag</code> + <code>props</code> map. Set from <code>extras["ra_tag"]</code> / <code>extras["ra_props"]</code>. Queried via <code>find_objects_by_tag</code>, <code>get/set_object_prop</code>.</td></tr>
+    <tr><td><strong>Ambient Sky Color</strong></td><td>6 new UBO tail fields (<code>ambientSkyTop/HorizonRGB</code>). Read by <code>miss.rmiss</code> for background + GI ambient. Set via Lua <code>engine.set_ambient_color()</code>.</td></tr>
+  </table>
 </section>
 
 <!-- BUILD -->
@@ -1260,7 +1291,7 @@ std::vector&lt;PerObjectBLAS&gt; objectBLASes;</code></pre>
 
   <hr>
 
-  <p>Ra Engine is sold at <strong>$49.99/seat</strong> on Steam through <strong>digiflux.one</strong>. Games built with Ra Engine are cross-promoted through the digiflux.one pipeline. <em>Launch Up</em> on Steam is built with Ra Engine.</p>
+  <p>Ra Engine is sold at <strong>$250/seat</strong> on Steam through <strong>digiflux.one</strong>. Games built with Ra Engine are cross-promoted through the digiflux.one pipeline. <em>Launch Up</em> on Steam is built with Ra Engine.</p>
 
   <div class="callout callout-purple">
     <strong>Revenue share:</strong> 2% annually over $100K, 1% annually over $1M. Resets each year. Terms are permanent.
