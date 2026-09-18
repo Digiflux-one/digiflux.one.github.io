@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ra Engine feedback — digiflux.one</title>
+  <meta name="description" content="Send feedback about Ra Engine to digiflux.one.">
+  <link rel="canonical" href="https://digiflux.one/suggest/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: dark; --bg:#0a0908; --panel:#12100e; --panel-2:#171411; --line:#39302a; --text:#f0ece6; --muted:#a49b93; --orange:#ff7c2a; --cyan:#2afff4; --danger:#ff9c7c; }
+    *,*::before,*::after { box-sizing:border-box; }
+    html { background:var(--bg); scroll-behavior:smooth; }
+    body { margin:0; min-width:320px; background:var(--bg); color:var(--text); font-family:"JetBrains Mono",monospace; line-height:1.6; -webkit-font-smoothing:antialiased; }
+    a { color:var(--cyan); text-underline-offset:3px; }
+    a:hover { color:var(--orange); }
+    .skip-link { position:absolute; left:-9999px; top:auto; }
+    .skip-link:focus { left:1rem; top:1rem; z-index:10; padding:.65rem .9rem; background:var(--orange); color:var(--bg); }
+    .shell { width:min(1100px,calc(100% - 2rem)); margin:0 auto; }
+    .site-header { border-bottom:1px solid var(--line); }
+    .nav { min-height:74px; display:flex; align-items:center; justify-content:space-between; gap:1.25rem; flex-wrap:wrap; }
+    .brand { color:var(--text); font-family:"Syne",sans-serif; font-size:1.15rem; font-weight:800; letter-spacing:-.04em; text-decoration:none; white-space:nowrap; }
+    .brand span { color:var(--orange); }
+    .nav-links { display:flex; align-items:center; justify-content:flex-end; gap:.35rem 1.1rem; flex-wrap:wrap; }
+    .nav-links a { color:var(--muted); font-size:.7rem; letter-spacing:.08em; text-decoration:none; text-transform:uppercase; }
+    .nav-links a:hover,.nav-links a[aria-current="page"] { color:var(--cyan); }
+    .nav-links .steam { color:var(--orange); }
+    main { padding:clamp(3.5rem,8vw,7rem) 0 5rem; }
+    .eyebrow { margin:0 0 1rem; color:var(--orange); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; }
+    h1,h2 { font-family:"Syne",sans-serif; letter-spacing:-.055em; line-height:1.02; }
+    h1 { max-width:11ch; margin:0; font-size:clamp(3.5rem,10vw,7.5rem); font-weight:800; }
+    .lede { max-width:62ch; margin:1.5rem 0 0; color:var(--muted); font-size:.88rem; }
+    .layout { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(230px,.65fr); gap:clamp(2rem,7vw,6rem); align-items:start; margin-top:clamp(3rem,7vw,5.5rem); }
+    .form-card { padding:clamp(1.2rem,3vw,2rem); border:1px solid var(--line); background:linear-gradient(145deg,var(--panel),rgba(18,16,14,.55)); }
+    form { display:grid; gap:1.35rem; }
+    label,.field-label { display:grid; gap:.5rem; color:var(--text); font-size:.76rem; font-weight:500; letter-spacing:.05em; }
+    .hint { color:var(--muted); font-size:.68rem; font-weight:400; letter-spacing:0; }
+    input,select,textarea { width:100%; border:1px solid var(--line); border-radius:0; background:var(--bg); color:var(--text); font:inherit; font-size:.84rem; padding:.78rem .85rem; outline:none; }
+    input:focus,select:focus,textarea:focus { border-color:var(--cyan); box-shadow:0 0 0 2px rgba(42,255,244,.12); }
+    input::placeholder,textarea::placeholder { color:#746b64; }
+    textarea { min-height:10rem; resize:vertical; }
+    select { appearance:auto; }
+    .row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+    .field-group { display:grid; gap:1rem; padding:1rem; border:1px solid var(--line); background:var(--panel-2); }
+    .field-group[hidden] { display:none; }
+    .field-group h2 { margin:0; color:var(--orange); font-size:1.1rem; font-weight:700; }
+    .field-group > p { margin:-.45rem 0 0; color:var(--muted); font-size:.7rem; }
+    .checks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.55rem .8rem; }
+    .check { display:flex; align-items:flex-start; gap:.55rem; color:var(--muted); font-size:.72rem; font-weight:400; letter-spacing:0; }
+    .check input { width:1rem; height:1rem; flex:0 0 auto; accent-color:var(--orange); margin:.1rem 0 0; padding:0; }
+    .actions { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; padding-top:.25rem; }
+    button { border:1px solid var(--orange); border-radius:0; background:var(--orange); color:var(--bg); cursor:pointer; font:600 .76rem "JetBrains Mono",monospace; letter-spacing:.08em; padding:.85rem 1.15rem; text-transform:uppercase; }
+    button:hover { border-color:var(--cyan); background:var(--cyan); }
+    .form-note { max-width:46ch; margin:0; color:var(--muted); font-size:.68rem; }
+    .success { margin:0 0 1.5rem; padding:1rem 1.1rem; border:1px solid var(--cyan); color:var(--text); font-size:.78rem; }
+    .success strong { display:block; margin-bottom:.25rem; color:var(--cyan); font-family:"Syne",sans-serif; font-size:1rem; }
+    .side { border-top:2px solid var(--orange); padding-top:1rem; }
+    .side h2 { margin:0 0 1rem; color:var(--orange); font-size:1.4rem; }
+    .side p,.side li { color:var(--muted); font-size:.75rem; }
+    .side ul { margin:1rem 0 0; padding-left:1.15rem; }
+    .side li+li { margin-top:.6rem; }
+    .footer { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; padding:1.25rem 0 2rem; border-top:1px solid var(--line); color:var(--muted); font-size:.68rem; }
+    .footer a { color:var(--muted); }
+    @media (max-width:760px) { .layout { grid-template-columns:1fr; } .side { order:-1; } }
+    @media (max-width:560px) { .nav { padding:1rem 0; } .nav-links { justify-content:flex-start; } .row,.checks { grid-template-columns:1fr; } h1 { font-size:clamp(3.2rem,18vw,5.2rem); } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to feedback form</a>
+  <header class="site-header">
+    <div class="shell nav">
+      <a class="brand" href="https://digiflux.one/">Ra <span>Engine</span></a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="https://digiflux.one/">Home</a>
+        <a href="/">Docs</a>
+        <a href="/suggest/" aria-current="page">Feedback</a>
+        <a href="/suggestions/">Suggestions</a>
+        <a class="steam" href="https://store.steampowered.com/app/4732830/Ra_Engine/">Steam store</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="shell">
+    <p class="eyebrow">digiflux.one / Ra Engine</p>
+    <h1>Ra Engine feedback</h1>
+    <p class="lede">Tell us what broke, what got in the way, or what would make Ra Engine better. Bug reports with clear reproduction steps are especially useful.</p>
+
+    <div class="layout">
+      <section>
+        <div id="success" class="success" hidden role="status">
+          <strong>Feedback sent.</strong>
+          Thanks — your message is on its way. You can send another report below.
+        </div>
+        <div class="form-card">
+          <form action="https://api.web3forms.com/submit" method="POST">
+            <input type="hidden" name="access_key" value="902605fa-2ec9-4f0e-bf78-75afc42da9f5">
+            <input type="hidden" name="subject" value="[digiflux.one suggestion]">
+            <input type="hidden" name="from_name" value="Ra Engine">
+            <input type="hidden" name="redirect" value="https://digiflux.one/suggest/?sent=1">
+            <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
+            <input type="hidden" name="site" value="digiflux.one">
+            <input type="hidden" id="timestamp" name="timestamp" value="">
+            <input type="hidden" id="page_url" name="page_url" value="">
+            <input type="hidden" id="user_agent" name="user_agent" value="">
+            <input type="hidden" id="referrer" name="referrer" value="">
+
+            <label for="category">Category
+              <select id="category" name="category" required>
+                <option value="" selected disabled>Choose one…</option>
+                <option value="Bug">Bug</option>
+                <option value="Complaint">Complaint</option>
+                <option value="Suggestion">Suggestion</option>
+              </select>
+            </label>
+
+            <label for="title">Title
+              <input id="title" name="title" type="text" maxlength="160" required placeholder="Short summary">
+            </label>
+
+            <label for="description">Description
+              <textarea id="description" name="description" required placeholder="Tell us what happened or what you would like to see."></textarea>
+            </label>
+
+            <fieldset class="field-group">
+              <legend class="field-label">Tags <span class="hint">(optional — choose any that apply)</span></legend>
+              <div class="checks">
+                <label class="check"><input type="checkbox" name="tags[]" value="Crash/won't launch"> Crash / won't launch</label>
+                <label class="check"><input type="checkbox" name="tags[]" value="Graphics/Vulkan"> Graphics / Vulkan</label>
+                <label class="check"><input type="checkbox" name="tags[]" value="Editor UI"> Editor UI</label>
+                <label class="check"><input type="checkbox" name="tags[]" value="Scenes/GLTF"> Scenes / GLTF</label>
+                <label class="check"><input type="checkbox" name="tags[]" value="Scripts/Lua"> Scripts / Lua</label>
+                <label class="check"><input type="checkbox" name="tags[]" value="Steam/launch/Proton"> Steam / launch / Proton</label>
+                <label class="check"><input type="checkbox" name="tags[]" value="Performance"> Performance</label>
+                <label class="check"><input type="checkbox" name="tags[]" value="Docs/website"> Docs / website</label>
+                <label class="check"><input type="checkbox" name="tags[]" value="Other"> Other</label>
+              </div>
+            </fieldset>
+
+            <fieldset id="bug-fields" class="field-group" hidden>
+              <legend><h2>Bug details</h2></legend>
+              <p>Optional details help us reproduce the problem faster.</p>
+              <div class="row">
+                <label for="version">Version / BuildID <span class="hint">(optional)</span>
+                  <input id="version" name="version" type="text" placeholder="e.g. 0.4.2 / Steam build">
+                </label>
+                <label for="os">OS <span class="hint">(optional)</span>
+                  <input id="os" name="os" type="text" placeholder="e.g. Windows 11, Ubuntu 24.04">
+                </label>
+              </div>
+              <label for="gpu">GPU / driver <span class="hint">(optional)</span>
+                <input id="gpu" name="gpu_driver" type="text" placeholder="e.g. RTX 4070 / NVIDIA 555">
+              </label>
+              <label for="repro">Reproduction steps <span class="hint">(optional)</span>
+                <textarea id="repro" name="repro_steps" placeholder="1. Open…  2. Click…  3. Observe…"></textarea>
+              </label>
+              <div class="row">
+                <label for="expected">Expected <span class="hint">(optional)</span>
+                  <textarea id="expected" name="expected" placeholder="What should happen?"></textarea>
+                </label>
+                <label for="actual">Actual <span class="hint">(optional)</span>
+                  <textarea id="actual" name="actual" placeholder="What happened instead?"></textarea>
+                </label>
+              </div>
+              <label for="frequency">Can reproduce / frequency <span class="hint">(optional)</span>
+                <input id="frequency" name="can_reproduce" type="text" placeholder="Always, 3/5 times, once…">
+              </label>
+              <p class="hint">Need to share a screenshot or launch.log? Submit the text report first, then attach files in the reply email if requested.</p>
+            </fieldset>
+
+            <fieldset id="severity-fields" class="field-group" hidden>
+              <legend class="field-label" for="severity">Severity</legend>
+              <select id="severity" name="severity">
+                <option value="nice">Nice to have</option>
+                <option value="annoying">Annoying</option>
+                <option value="blocks work">Blocks work</option>
+              </select>
+            </fieldset>
+
+            <div class="row">
+              <label for="name">Name <span class="hint">(optional)</span>
+                <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name">
+              </label>
+              <label for="email">Contact email
+                <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+              </label>
+            </div>
+
+            <div class="actions">
+              <button type="submit">Send feedback</button>
+              <p class="form-note">No account required. Your contact email is used for follow-up on this report.</p>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <aside class="side">
+        <h2>What happens next?</h2>
+        <p>Feedback goes to the Ra Engine inbox. Suggestions and useful bug reports may be summarized on the public board.</p>
+        <ul>
+          <li>Pick the category that best fits.</li>
+          <li>Use a specific title and include context.</li>
+          <li>For bugs, tell us how to reproduce the issue.</li>
+        </ul>
+        <p><a href="/suggestions/">View the feedback board →</a></p>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="shell footer">
+    <span>Ra Engine · digiflux.one</span>
+    <span><a href="/suggest/">Feedback</a> · <a href="/suggestions/">Suggestions</a></span>
+  </footer>
+
+  <script>
+    (function () {
+      var category = document.getElementById('category');
+      var bugFields = document.getElementById('bug-fields');
+      var severityFields = document.getElementById('severity-fields');
+      var severity = document.getElementById('severity');
+      var description = document.getElementById('description');
+      var placeholders = {
+        Bug: 'What happened? Include the steps that led to the problem.',
+        Complaint: 'What is frustrating or not working well?',
+        Suggestion: 'What would make Ra Engine better?'
+      };
+      function updateFields() {
+        var value = category.value;
+        var isBug = value === 'Bug';
+        bugFields.hidden = !isBug;
+        severityFields.hidden = isBug || !value;
+        severity.required = !isBug && !!value;
+        description.placeholder = placeholders[value] || 'Tell us what happened or what you would like to see.';
+      }
+      function fillContext() {
+        document.getElementById('timestamp').value = new Date().toISOString();
+        document.getElementById('page_url').value = window.location.href;
+        document.getElementById('user_agent').value = navigator.userAgent;
+        document.getElementById('referrer').value = document.referrer;
+      }
+      category.addEventListener('change', updateFields);
+      document.querySelector('form').addEventListener('submit', fillContext);
+      fillContext();
+      updateFields();
+      if (new URLSearchParams(window.location.search).get('sent') === '1') {
+        document.getElementById('success').hidden = false;
+      }
+    }());
+  </script>
+</body>
+</html>
