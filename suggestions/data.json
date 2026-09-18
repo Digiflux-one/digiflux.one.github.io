@@ -5,12 +5,15 @@
     "suggestion": "E2E digiflux.one website/docs test",
     "description": "E2E Suggest Box test please ignore",
     "category": "Suggestion",
-    "tags": ["Docs/website"],
+    "tags": [
+      "Docs/website"
+    ],
     "page": "/suggest/",
     "name": "Suggest Box Monitor/Router",
     "status": "later",
-    "note": "E2E pending decision — please ignore",
+    "note": "Decision E2E: Later via signed link (please ignore)",
     "submitted": "2026-09-17",
-    "updated": "2026-09-17"
+    "updated": "2026-09-18",
+    "decidedAt": "2026-09-18T06:05:11Z"
   }
 ]
