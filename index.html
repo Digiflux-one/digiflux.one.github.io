@@ -404,28 +404,42 @@
 
   /* ── CROSS PROMO ── */
   .xpromo {
-    background: var(--bg2); border: 0.5px solid var(--border-subtle);
-    border-radius: 4px; padding: 2.5rem 3rem;
-    display: flex; gap: 3rem; align-items: center;
-    margin-top: 4rem; flex-wrap: wrap;
+    margin-top: 4rem;
   }
   .xpromo-label {
     font-family: 'DM Mono', monospace; font-size: 12px;
     color: var(--text-dim); letter-spacing: 0.03em; text-transform: none; font-weight: 500;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .xpromo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    border: 0.5px solid var(--border-subtle);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--border-subtle);
+  }
+  .xpromo-card {
+    background: var(--bg2);
+    padding: 2rem 1.75rem;
   }
   .xpromo-name {
-    font-family: 'Outfit', sans-serif; font-size: 36px;
-    color: var(--text); letter-spacing: 0.04em; line-height: 1;
-    margin-bottom: 0.5rem;
+    font-family: 'Outfit', sans-serif; font-size: 28px;
+    color: var(--text); letter-spacing: 0.04em; line-height: 1.05;
+    margin-bottom: 0.65rem;
   }
-  .xpromo-desc { font-size: 15px; color: var(--text-muted); font-weight: 400; line-height: 1.7; max-width: 400px; }
+  .xpromo-desc { font-size: 14px; color: var(--text-muted); font-weight: 400; line-height: 1.7; max-width: none; }
+  .xpromo-links {
+    display: flex; flex-wrap: wrap; gap: 0.65rem;
+    margin-top: 1.25rem;
+  }
   .xpromo-link {
-    font-family: 'DM Mono', monospace; font-size: 14px;
+    font-family: 'DM Mono', monospace; font-size: 13px;
     color: var(--cyan); border: 0.5px solid rgba(0,229,212,0.25);
-    padding: 10px 20px; border-radius: 2px; text-decoration: none;
+    padding: 9px 16px; border-radius: 2px; text-decoration: none;
     letter-spacing: 0.02em; white-space: nowrap; transition: background 0.2s;
-    display: inline-block; margin-top: 1.25rem; align-self: flex-start;
+    display: inline-block;
   }
   .xpromo-link:hover { background: rgba(0,229,212,0.06); }
 
@@ -478,6 +492,19 @@
     letter-spacing: 0.05em; flex-wrap: wrap; gap: 1rem;
   }
   footer span { color: var(--magenta); }
+  .footer-legal {
+    flex-basis: 100%; position: static; z-index: auto;
+    display: flex; flex-wrap: wrap; justify-content: flex-start;
+    align-items: center; gap: 0.35rem 1.25rem;
+    width: 100%; height: auto; padding: 0;
+    background: transparent; backdrop-filter: none;
+    border: 0; box-shadow: none;
+  }
+  .footer-legal a {
+    color: var(--text-muted); font-size: 12px;
+    text-decoration: none; letter-spacing: 0.02em;
+  }
+  .footer-legal a:hover { color: var(--text); }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -501,7 +528,8 @@
     .tiers { grid-template-columns: 1fr; width: 100%; }
     .faq-grid { grid-template-columns: 1fr; }
     .ra-header { flex-direction: column; align-items: flex-start; }
-    .xpromo { flex-direction: column; gap: 1.5rem; padding: 2rem 1.25rem; width: 100%; }
+    .xpromo { width: 100%; }
+    .xpromo-card { padding: 1.75rem 1.25rem; }
     .xpromo-desc { max-width: 100%; }
     .cta-band { padding: 60px 1.25rem; }
     .features-grid { grid-template-columns: 1fr; }
@@ -661,7 +689,7 @@
           Buy Ra Engine on Steam</a>
         </a>
         <div class="price-note">
-          BY PURCHASING YOU AGREE TO THE LICENSE TERMS.<br>
+          BY PURCHASING YOU AGREE TO THE <a href="/terms/" style="color:inherit; text-decoration:underline;">LICENSE TERMS</a>.<br>
           REVENUE SHARE IS SELF-REPORTED ANNUALLY.<br>
           COLOR IT COMPANY LLC RESERVES AUDIT RIGHTS.
         </div>
@@ -713,15 +741,40 @@
 
     <!-- CROSS PROMO -->
     <div class="xpromo">
-      <div>
-        <div class="xpromo-label">Built with Ra Engine</div>
-        <div class="xpromo-name">LAUNCH UP</div>
-        <div class="xpromo-desc">
-          A vertical FPS platformer built entirely on Digiflux.one and Ra Engine.
-          Our launch title — proof that the pipeline ships real games.
-          Available on Steam.
+      <div class="xpromo-label">Built with Ra Engine</div>
+      <div class="xpromo-grid">
+        <div class="xpromo-card">
+          <div class="xpromo-name">LAUNCH UP</div>
+          <div class="xpromo-desc">
+            A vertical FPS platformer built entirely on Digiflux.one and Ra Engine.
+            Our launch title — proof that the pipeline ships real games.
+            Available on Steam.
+          </div>
+          <div class="xpromo-links">
+            <a href="https://store.steampowered.com/app/4732830/Ra_Engine/" class="xpromo-link">View on Steam →</a>
+          </div>
         </div>
-        <a href="https://store.steampowered.com/app/4732830/Ra_Engine/" class="xpromo-link">View on Steam →</a>
+        <div class="xpromo-card">
+          <div class="xpromo-name">LASER TAG</div>
+          <div class="xpromo-desc">
+            Free-to-play arena laser tag built on Digiflux.one and Ra Engine.
+            Tag opponents in a ray-traced space — our free Steam title.
+          </div>
+          <div class="xpromo-links">
+            <a href="https://store.steampowered.com/app/4740850/Laser_Tag/" class="xpromo-link">View on Steam →</a>
+          </div>
+        </div>
+        <div class="xpromo-card">
+          <div class="xpromo-name">LASER TAG DEMO</div>
+          <div class="xpromo-desc">
+            Solo Arena Sweep — clear moving targets wave by wave in a ray-traced arena.
+            Free demo for Windows and Linux.
+          </div>
+          <div class="xpromo-links">
+            <a href="https://store.steampowered.com/app/5263910/Laser_Tag_Demo/" class="xpromo-link">Steam →</a>
+            <a href="https://coloritcompany.itch.io/laser-tag-demo" class="xpromo-link">itch.io →</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -885,6 +938,15 @@
 <footer>
   <div>DIGIFLUX<span>.ONE</span> · ∮ Flux Studios · Color It Company LLC</div>
   <div>Ra Engine $49.99/seat · 2% over $100K · 1% over $1M · Annual reset · Terms permanent</div>
+  <nav class="footer-legal" aria-label="Legal">
+    <a href="/terms/">Terms / License</a>
+    <a href="/privacy/">Privacy</a>
+    <a href="/aup/">AUP</a>
+    <a href="/refunds/">Refunds</a>
+    <a href="/cookies/">Cookies</a>
+    <a href="/copyright/">Copyright</a>
+    <a href="/legal/">Legal</a>
+  </nav>
 </footer>
 
 <script>
