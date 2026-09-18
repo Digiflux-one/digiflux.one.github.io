@@ -395,7 +395,7 @@ footer {
   padding: 2rem 3.5rem;
   border-top: 1px solid var(--border);
   font-size: 11px; color: var(--text3);
-  display: flex; gap: 2rem; align-items: center;
+  display: flex; flex-wrap: wrap; gap: 2rem; align-items: center;
 }
 
 footer a { color: var(--text3); }
@@ -727,7 +727,7 @@ footer a:hover { color: var(--orange); }
   <div class="header-right">
     <span class="badge badge-orange">Vulkan 1.4</span>
     <span class="badge badge-cyan">RTX Hardware</span>
-    <span class="badge">$250/seat</span>
+    <span class="badge">$49.99/seat</span>
   </div>
 </header>
 
@@ -739,6 +739,7 @@ footer a:hover { color: var(--orange); }
   <div class="nav-section">
     <div class="nav-label">Overview</div>
     <a class="nav-item active" href="#intro">Introduction</a>
+    <a href="/suggest/" class="nav-item">Feedback</a>
     <a class="nav-item" href="#quickstart">Quick Start</a>
     <a class="nav-item" href="#hardware">Hardware Requirements</a>
   </div>
@@ -1281,17 +1282,27 @@ std::vector&lt;PerObjectBLAS&gt; objectBLASes;</code></pre>
 <section class="doc-section" id="products">
   <h2><span class="accent">13.</span> Built with Ra Engine</h2>
 
-  <div class="card-grid" style="max-width: 320px;">
+  <div class="card-grid" style="max-width: 760px;">
     <div class="card">
       <div class="card-icon">↑</div>
-      <h4>Launch Up</h4>
+      <h4><a href="https://store.steampowered.com/app/4705880/Launch_Up/">Launch Up</a></h4>
       <p>Vertical FPS platformer. Height-based scoring, 100 pts/metre. Steam page live. Launch title. Jump gravity −18.0, coyote time 0.15s.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">✦</div>
+      <h4><a href="https://store.steampowered.com/app/4740850/Laser_Tag/">Laser Tag</a></h4>
+      <p>Fast-paced laser tag action built with Ra Engine. Available on Steam.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">◇</div>
+      <h4><a href="https://store.steampowered.com/app/5263910/Laser_Tag_Demo/">Laser Tag Demo</a></h4>
+      <p>Try the Laser Tag experience on Steam or <a href="https://coloritcompany.itch.io/laser-tag-demo">itch.io</a>.</p>
     </div>
   </div>
 
   <hr>
 
-  <p>Ra Engine is sold at <strong>$250/seat</strong> on Steam through <strong>digiflux.one</strong>. Games built with Ra Engine are cross-promoted through the digiflux.one pipeline. <em>Launch Up</em> on Steam is built with Ra Engine.</p>
+  <p>Ra Engine is sold at <strong>$49.99/seat</strong> on Steam through <strong>digiflux.one</strong>. Games built with Ra Engine are cross-promoted through the digiflux.one pipeline. <em>Launch Up</em> on Steam is built with Ra Engine.</p>
 
   <div class="callout callout-purple">
     <strong>Revenue share:</strong> 2% annually over $100K, 1% annually over $1M. Resets each year. Terms are permanent.
@@ -1302,11 +1313,21 @@ std::vector&lt;PerObjectBLAS&gt; objectBLASes;</code></pre>
 </div>
 
 <footer>
-  <span class="footer-logo">digiflux.one</span>
+  <a href="https://digiflux.one/" class="footer-logo">digiflux.one</a>
   <a href="https://digiflux.one">digiflux.one</a>
   <a href="https://digiflux.one/docs">docs</a>
   <a href="lua-api.html">lua api</a>
+  <a href="/suggest/">Feedback</a>
   <span>Ra Engine &copy; 2025 Color It Company LLC — Flux Studios ∮</span>
+  <nav class="footer-legal" aria-label="Legal" style="display:flex;flex-wrap:wrap;gap:.5rem 1rem;width:100%;margin-top:.75rem;font-size:.75rem">
+    <a href="/terms/">Terms</a>
+    <a href="/privacy/">Privacy</a>
+    <a href="/aup/">AUP</a>
+    <a href="/refunds/">Refunds</a>
+    <a href="/cookies/">Cookies</a>
+    <a href="/copyright/">Copyright</a>
+    <a href="/legal/">Legal</a>
+  </nav>
 </footer>
 
 <script>
