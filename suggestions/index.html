@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ra Engine feedback board — digiflux.one</title>
+  <meta name="description" content="Public Ra Engine feedback board for digiflux.one.">
+  <link rel="canonical" href="https://digiflux.one/suggestions/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme:dark; --bg:#0a0908; --panel:#12100e; --line:#39302a; --text:#f0ece6; --muted:#a49b93; --orange:#ff7c2a; --cyan:#2afff4; --yes:#79f7bd; --later:#ffd166; --no:#ff8b8b; --done:#9ea8ff; }
+    *,*::before,*::after { box-sizing:border-box; }
+    html { background:var(--bg); scroll-behavior:smooth; }
+    body { margin:0; min-width:320px; background:var(--bg); color:var(--text); font-family:"JetBrains Mono",monospace; line-height:1.6; -webkit-font-smoothing:antialiased; }
+    a { color:var(--cyan); text-underline-offset:3px; }
+    a:hover { color:var(--orange); }
+    .skip-link { position:absolute; left:-9999px; }
+    .skip-link:focus { left:1rem; top:1rem; z-index:10; padding:.65rem .9rem; background:var(--orange); color:var(--bg); }
+    .shell { width:min(1100px,calc(100% - 2rem)); margin:0 auto; }
+    .site-header { border-bottom:1px solid var(--line); }
+    .nav { min-height:74px; display:flex; align-items:center; justify-content:space-between; gap:1.25rem; flex-wrap:wrap; }
+    .brand { color:var(--text); font-family:"Syne",sans-serif; font-size:1.15rem; font-weight:800; letter-spacing:-.04em; text-decoration:none; white-space:nowrap; }
+    .brand span { color:var(--orange); }
+    .nav-links { display:flex; align-items:center; justify-content:flex-end; gap:.35rem 1.1rem; flex-wrap:wrap; }
+    .nav-links a { color:var(--muted); font-size:.7rem; letter-spacing:.08em; text-decoration:none; text-transform:uppercase; }
+    .nav-links a:hover,.nav-links a[aria-current="page"] { color:var(--cyan); }
+    .nav-links .steam { color:var(--orange); }
+    main { padding:clamp(3.5rem,8vw,7rem) 0 5rem; }
+    .eyebrow { margin:0 0 1rem; color:var(--orange); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; }
+    h1,h2 { font-family:"Syne",sans-serif; letter-spacing:-.055em; line-height:1.02; }
+    h1 { margin:0; font-size:clamp(3.5rem,10vw,7.5rem); font-weight:800; }
+    .lede { max-width:64ch; margin:1.5rem 0 0; color:var(--muted); font-size:.88rem; }
+    .actions { display:flex; gap:1rem; flex-wrap:wrap; margin-top:2rem; }
+    .button { display:inline-block; padding:.8rem 1rem; border:1px solid var(--orange); background:var(--orange); color:var(--bg); font-size:.74rem; font-weight:600; letter-spacing:.08em; text-decoration:none; text-transform:uppercase; }
+    .button:hover { border-color:var(--cyan); background:var(--cyan); color:var(--bg); }
+    .button.secondary { border-color:var(--line); background:transparent; color:var(--text); }
+    .button.secondary:hover { border-color:var(--cyan); color:var(--cyan); }
+    .board { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; margin-top:clamp(3rem,6vw,5rem); }
+    .column { min-width:0; border-top:2px solid var(--line); }
+    .column[data-status="yes"] { border-color:var(--yes); }
+    .column[data-status="later"] { border-color:var(--later); }
+    .column[data-status="no"] { border-color:var(--no); }
+    .column[data-status="done"] { border-color:var(--done); }
+    .column-header { display:flex; justify-content:space-between; gap:.5rem; padding:1rem 0 .8rem; }
+    .column-header h2 { margin:0; font-size:1.1rem; }
+    .column[data-status="yes"] h2 { color:var(--yes); }
+    .column[data-status="later"] h2 { color:var(--later); }
+    .column[data-status="no"] h2 { color:var(--no); }
+    .column[data-status="done"] h2 { color:var(--done); }
+    .count { color:var(--muted); font-size:.7rem; }
+    .cards { display:grid; gap:.75rem; }
+    .card { padding:1rem; border:1px solid var(--line); background:var(--panel); }
+    .card h3 { margin:0; font-family:"Syne",sans-serif; font-size:1rem; letter-spacing:-.03em; line-height:1.15; }
+    .card p { margin:.7rem 0 0; color:var(--muted); font-size:.72rem; overflow-wrap:anywhere; }
+    .meta { display:flex; gap:.45rem; flex-wrap:wrap; margin-bottom:.7rem; color:var(--muted); font-size:.62rem; text-transform:uppercase; }
+    .tag { padding:.2rem .4rem; border:1px solid var(--line); }
+    .empty { min-height:5rem; margin:0; padding:1rem; border:1px dashed var(--line); color:#746b64; font-size:.7rem; }
+    .loading,.error { margin-top:3rem; padding:1rem; border:1px solid var(--line); color:var(--muted); font-size:.78rem; }
+    .error { border-color:var(--danger,#ff9c7c); color:var(--danger,#ff9c7c); }
+    .footer { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; padding:1.25rem 0 2rem; border-top:1px solid var(--line); color:var(--muted); font-size:.68rem; }
+    .footer a { color:var(--muted); }
+    @media (max-width:900px) { .board { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:560px) { .nav { padding:1rem 0; } .nav-links { justify-content:flex-start; } .board { grid-template-columns:1fr; } h1 { font-size:clamp(3.2rem,18vw,5.2rem); } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to feedback board</a>
+  <header class="site-header">
+    <div class="shell nav">
+      <a class="brand" href="https://digiflux.one/">Ra <span>Engine</span></a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="https://digiflux.one/">Home</a>
+        <a href="/">Docs</a>
+        <a href="/suggest/">Feedback</a>
+        <a href="/suggestions/" aria-current="page">Suggestions</a>
+        <a class="steam" href="https://store.steampowered.com/app/4732830/Ra_Engine/">Steam store</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="shell">
+    <p class="eyebrow">digiflux.one / public board</p>
+    <h1>Ra Engine feedback board</h1>
+    <p class="lede">A transparent view of feedback triage. Yes means it is accepted, Later means it is parked, No means it is declined, and Done means it shipped.</p>
+    <div class="actions">
+      <a class="button" href="/suggest/">Send feedback</a>
+      <a class="button secondary" href="/">Back to docs</a>
+    </div>
+
+    <div id="loading" class="loading" role="status">Loading the board…</div>
+    <section id="board" class="board" aria-live="polite" aria-label="Feedback by decision" hidden></section>
+  </main>
+
+  <footer class="shell footer">
+    <span>Ra Engine · digiflux.one</span>
+    <span><a href="/suggest/">Feedback</a> · <a href="/suggestions/">Suggestions</a></span>
+  </footer>
+
+  <script>
+    (function () {
+      var statuses = [
+        { key:'yes', label:'Yes' },
+        { key:'later', label:'Later' },
+        { key:'no', label:'No' },
+        { key:'done', label:'Done' }
+      ];
+      var board = document.getElementById('board');
+      var loading = document.getElementById('loading');
+      function text(value) { return value == null ? '' : String(value); }
+      function list(value) { return Array.isArray(value) ? value : (value ? [value] : []); }
+      function make(tag, className, value) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (value != null) node.textContent = text(value);
+        return node;
+      }
+      function card(item) {
+        var article = make('article', 'card');
+        var meta = make('div', 'meta');
+        var category = text(item.category);
+        if (category) meta.appendChild(make('span', 'tag', category));
+        list(item.tags).forEach(function (tag) { meta.appendChild(make('span', 'tag', tag)); });
+        if (meta.childNodes.length) article.appendChild(meta);
+        article.appendChild(make('h3', '', item.title || item.suggestion || 'Untitled feedback'));
+        var description = item.description || item.note;
+        if (description) article.appendChild(make('p', '', description));
+        var details = [];
+        if (item.updated) details.push('Updated ' + text(item.updated));
+        else if (item.submitted) details.push('Submitted ' + text(item.submitted));
+        if (item.name) details.push(text(item.name));
+        if (details.length) article.appendChild(make('p', '', details.join(' · ')));
+        return article;
+      }
+      function render(items) {
+        board.textContent = '';
+        statuses.forEach(function (status) {
+          var column = document.createElement('section');
+          column.className = 'column';
+          column.dataset.status = status.key;
+          var header = make('div', 'column-header');
+          header.appendChild(make('h2', '', status.label));
+          var matching = (Array.isArray(items) ? items : []).filter(function (item) {
+            var value = text(item && item.status).toLowerCase();
+            return value === status.key;
+          });
+          header.appendChild(make('span', 'count', String(matching.length).padStart(2, '0')));
+          column.appendChild(header);
+          var cards = make('div', 'cards');
+          if (!matching.length) cards.appendChild(make('p', 'empty', 'Nothing here yet.'));
+          matching.forEach(function (item) { cards.appendChild(card(item || {})); });
+          column.appendChild(cards);
+          board.appendChild(column);
+        });
+        loading.hidden = true;
+        board.hidden = false;
+      }
+      fetch('/suggestions/data.json', { cache:'no-store' })
+        .then(function (response) {
+          if (!response.ok) throw new Error('Board data unavailable');
+          return response.json();
+        })
+        .then(render)
+        .catch(function () {
+          loading.className = 'error';
+          loading.textContent = 'The board could not be loaded right now. Please try again later or send feedback directly.';
+        });
+    }());
+  </script>
+</body>
+</html>
